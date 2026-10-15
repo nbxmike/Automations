@@ -1,0 +1,18 @@
+# Runs yard_sunrise_automation.py as a systemd service for the selected user,
+# assuming the script is installed at /home/pi/automations/yard_sunrise_automation.py.
+[Unit]
+Description=Yard sunrise automation for pi
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/automations
+ExecStart=/usr/bin/python3 /home/pi/automations/yard_sunrise_automation.py
+Restart=on-failure
+RestartSec=5s
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

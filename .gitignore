@@ -1,0 +1,8 @@
+# Local secrets for automation scripts
+automation_credentials.py
+
+# Local backup artifacts
+backups/
+__pycache__/
+.vs/
+References/

@@ -1,0 +1,8 @@
+# Force bash scripts and source code to always use LF line endings
+* text=auto
+
+*.sh text eol=lf
+*.py text eol=lf
+*.c text eol=lf
+*.h text eol=lf
+*.service text eol=lf

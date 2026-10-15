@@ -1,0 +1,18 @@
+# Runs kitchen_dimming.py as a systemd service for the selected user, assuming
+# the script is installed at /home/pi/automations/kitchen_dimming.py.
+[Unit]
+Description=Kitchen idle-dimming automation for pi
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/automations
+ExecStart=/usr/bin/python3 /home/pi/automations/kitchen_dimming.py
+Restart=on-failure
+RestartSec=5s
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

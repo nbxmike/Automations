@@ -1,0 +1,18 @@
+# Runs presence_check_v2.py as a systemd service for the selected user,
+# assuming the script is installed at /home/pi/automations/presence_check_v2.py.
+[Unit]
+Description=Omada Presence Check V2 for pi
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/automations
+ExecStart=/usr/bin/python3 /home/pi/automations/presence_check_v2.py
+Restart=on-failure
+RestartSec=5s
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
