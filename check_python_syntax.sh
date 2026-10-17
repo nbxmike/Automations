@@ -28,6 +28,7 @@ done
 cd "$SCRIPT_DIR" || exit 1
 
 python_files=(
+    "default_color_temp.py"
     "kitchen_dimming.py"
     "kitchen_early_morning_on.py"
     "presence_check_v2.py"

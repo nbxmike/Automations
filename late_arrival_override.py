@@ -29,7 +29,7 @@ LONGITUDE: Optional[float] = -70.68931574583688
 
 # Virtual device definitions hosted by this script.
 # - late_arrival_override: blocks yard midnight shutdown when ON.
-# - kitchenSpectral: Alexa-visible kitchen dimmer and manual-intervention marker.
+# - kitchenSpectral: Alexa-visible kitchen dimmer and manual-change markers.
 VIRTUAL_DEVICES = {
     "late_arrival_override": {
         "reset_at_sunrise": True,
@@ -45,22 +45,37 @@ KITCHEN_SPECTRAL_LEVEL_TOPICS = {
     f"cmnd/{KITCHEN_SPECTRAL}/BRIGHTNESS",
     f"cmnd/{KITCHEN_SPECTRAL}/BRIGHTNESS_WITH_ONOFF",
 }
-KITCHEN_SPECTRAL_MANUAL_TOPIC = f"stat/{KITCHEN_SPECTRAL}/manuallyTriggered"
+KITCHEN_SPECTRAL_COLOR_TEMP_TOPICS = {
+    f"cmnd/{KITCHEN_SPECTRAL}/COLOR_TEMP",
+    f"cmnd/{KITCHEN_SPECTRAL}/COLOR_TEMP_WITH_ONOFF",
+}
+KITCHEN_SPECTRAL_MANUAL_POWER_TOPIC = (
+    f"stat/{KITCHEN_SPECTRAL}/manuallyTriggeredPower"
+)
+KITCHEN_SPECTRAL_MANUAL_BRIGHTNESS_TOPIC = (
+    f"stat/{KITCHEN_SPECTRAL}/manuallyTriggeredBrightness"
+)
+KITCHEN_SPECTRAL_MANUAL_COLOR_TEMP_TOPIC = (
+    f"stat/{KITCHEN_SPECTRAL}/manuallyTriggeredColorTemp"
+)
 MANUAL_TRIGGER_CLEAR_SECONDS = 5
 BRIGHTNESS_MIN = 1
 BRIGHTNESS_MAX = 254
+COLOR_TEMP_MIN = 153
+COLOR_TEMP_MAX = 500
 
 # Logging setup matches the kitchen automation style.
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
 device_state: Dict[str, bool] = {name: False for name in VIRTUAL_DEVICES}
 device_brightness = {KITCHEN_SPECTRAL: 127}
+device_color_temp = {KITCHEN_SPECTRAL: 500}
 last_state_change_utc: Dict[str, datetime] = {
     name: datetime.now(timezone.utc) for name in VIRTUAL_DEVICES
 }
 sunrise_reset_done = False
 missing_sun_config_logged = False
-manual_trigger_timer: Optional[threading.Timer] = None
+manual_trigger_timers: Dict[str, threading.Timer] = {}
 
 
 # Randomly assigned during development; static per implementation for readable,
@@ -123,6 +138,7 @@ def command_topics(device_name: str):
     topics = power_command_topics(device_name)
     if device_name == KITCHEN_SPECTRAL:
         topics.extend(KITCHEN_SPECTRAL_LEVEL_TOPICS)
+        topics.extend(KITCHEN_SPECTRAL_COLOR_TEMP_TOPICS)
     return topics
 
 
@@ -155,15 +171,22 @@ def publish_state(client, device_name: str):
             str(device_brightness[KITCHEN_SPECTRAL]),
             retain=True,
         )
+        client.publish(
+            f"stat/{KITCHEN_SPECTRAL}/COLOR_TEMP",
+            str(device_color_temp[KITCHEN_SPECTRAL]),
+            retain=True,
+        )
 
     # Provide a JSON state payload for automation consumers.
-    state_payload = json.dumps(
-        {
-            "device": device_name,
-            "state": state_value,
-            "time_utc": time_utc,
-        }
-    )
+    state_payload_data = {
+        "device": device_name,
+        "state": state_value,
+        "time_utc": time_utc,
+    }
+    if device_name == KITCHEN_SPECTRAL:
+        state_payload_data["brightness"] = device_brightness[KITCHEN_SPECTRAL]
+        state_payload_data["color_temp"] = device_color_temp[KITCHEN_SPECTRAL]
+    state_payload = json.dumps(state_payload_data)
     client.publish(f"stat/{device_name}/STATE", state_payload, retain=True)
 
 
@@ -174,26 +197,27 @@ def set_device_state(client, device_name: str, new_state: bool):
     publish_state(client, device_name)
 
 
-def _clear_manual_trigger(client):
-    global manual_trigger_timer
-    client.publish(KITCHEN_SPECTRAL_MANUAL_TOPIC, "OFF", retain=True)
-    logging.info("Cleared kitchenSpectral manuallyTriggered flag.")
-    manual_trigger_timer = None
+def _clear_manual_trigger(client, topic: str):
+    timer = manual_trigger_timers.pop(topic, None)
+    if timer is not None:
+        timer.cancel()
+    client.publish(topic, "OFF", retain=True)
+    logging.info("Cleared kitchenSpectral manual flag: %s", topic)
 
 
-def _signal_manual_trigger(client):
-    global manual_trigger_timer
-    if manual_trigger_timer is not None:
-        manual_trigger_timer.cancel()
+def _signal_manual_trigger(client, topic: str):
+    existing_timer = manual_trigger_timers.get(topic)
+    if existing_timer is not None:
+        existing_timer.cancel()
 
-    client.publish(KITCHEN_SPECTRAL_MANUAL_TOPIC, "ON", retain=True)
-    manual_trigger_timer = threading.Timer(
+    client.publish(topic, "ON", retain=True)
+    manual_trigger_timers[topic] = threading.Timer(
         MANUAL_TRIGGER_CLEAR_SECONDS,
         _clear_manual_trigger,
-        args=(client,),
+        args=(client, topic),
     )
-    manual_trigger_timer.daemon = True
-    manual_trigger_timer.start()
+    manual_trigger_timers[topic].daemon = True
+    manual_trigger_timers[topic].start()
 
 
 def _handle_brightness_command(client, topic: str, payload: str):
@@ -208,9 +232,26 @@ def _handle_brightness_command(client, topic: str, payload: str):
     if topic.endswith("BRIGHTNESS_WITH_ONOFF"):
         device_state[KITCHEN_SPECTRAL] = True
     last_state_change_utc[KITCHEN_SPECTRAL] = datetime.now(timezone.utc)
-    _signal_manual_trigger(client)
+    _signal_manual_trigger(client, KITCHEN_SPECTRAL_MANUAL_BRIGHTNESS_TOPIC)
     publish_state(client, KITCHEN_SPECTRAL)
     logging.info("Received kitchenSpectral brightness command: %s", brightness)
+
+
+def _handle_color_temp_command(client, topic: str, payload: str):
+    try:
+        color_temp = int(float(payload))
+    except ValueError:
+        logging.warning("Ignored invalid kitchenSpectral color_temp: %r", payload)
+        return
+
+    color_temp = max(COLOR_TEMP_MIN, min(COLOR_TEMP_MAX, color_temp))
+    device_color_temp[KITCHEN_SPECTRAL] = color_temp
+    if topic.endswith("COLOR_TEMP_WITH_ONOFF"):
+        device_state[KITCHEN_SPECTRAL] = True
+    last_state_change_utc[KITCHEN_SPECTRAL] = datetime.now(timezone.utc)
+    _signal_manual_trigger(client, KITCHEN_SPECTRAL_MANUAL_COLOR_TEMP_TOPIC)
+    publish_state(client, KITCHEN_SPECTRAL)
+    logging.info("Received kitchenSpectral color_temp command: %s", color_temp)
 
 
 def on_message(client, userdata, msg):
@@ -224,6 +265,9 @@ def on_message(client, userdata, msg):
         if msg.topic in KITCHEN_SPECTRAL_LEVEL_TOPICS:
             _handle_brightness_command(client, msg.topic, payload)
             return
+        if msg.topic in KITCHEN_SPECTRAL_COLOR_TEMP_TOPICS:
+            _handle_color_temp_command(client, msg.topic, payload)
+            return
 
         value = _normalize_bool(payload)
         if value is None:
@@ -233,7 +277,7 @@ def on_message(client, userdata, msg):
         logging.info(f"Received command for {device_name} on {msg.topic}: {value}")
         set_device_state(client, device_name, value)
         if device_name == KITCHEN_SPECTRAL:
-            _signal_manual_trigger(client)
+            _signal_manual_trigger(client, KITCHEN_SPECTRAL_MANUAL_POWER_TOPIC)
     except Exception:
         logging.exception("Unhandled error in MQTT message handler.")
 
@@ -248,7 +292,9 @@ def on_connect(client, userdata, flags, rc, properties=None):
         # Default all hosted virtual devices to OFF on startup.
         for device_name in VIRTUAL_DEVICES:
             set_device_state(client, device_name, False)
-        client.publish(KITCHEN_SPECTRAL_MANUAL_TOPIC, "OFF", retain=True)
+        client.publish(KITCHEN_SPECTRAL_MANUAL_POWER_TOPIC, "OFF", retain=True)
+        client.publish(KITCHEN_SPECTRAL_MANUAL_BRIGHTNESS_TOPIC, "OFF", retain=True)
+        client.publish(KITCHEN_SPECTRAL_MANUAL_COLOR_TEMP_TOPIC, "OFF", retain=True)
     else:
         logging.error(f"Failed to connect to MQTT broker. rc={rc}")
 

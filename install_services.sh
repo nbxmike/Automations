@@ -68,6 +68,17 @@ if [ ! -f "$syntax_check" ]; then
         "Copy check_python_syntax.sh into $AUTOMATIONS_DIR before installing services."
 fi
 
+required_files=(
+    "$AUTOMATIONS_DIR/default_color_temp.py"
+    "$AUTOMATIONS_DIR/default_color_temp.service"
+)
+for required_file in "${required_files[@]}"; do
+    if [ ! -f "$required_file" ]; then
+        fail "Required automation file not found: $required_file" \
+            "Copy the missing file into $AUTOMATIONS_DIR before installing services."
+    fi
+done
+
 echo "Running Python syntax checks..."
 if ! bash "$syntax_check"; then
     fail "Python syntax check failed." \

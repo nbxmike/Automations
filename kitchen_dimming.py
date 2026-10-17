@@ -1,22 +1,14 @@
 # Monitors kitchen presence and light states over MQTT, dimming after vacancy
-# and restoring algorithm-dimmed lights after sustained nighttime occupancy.
+# and restoring algorithm-dimmed lights after sustained occupancy.
 import asyncio
 from concurrent.futures import CancelledError as FutureCancelledError
 import json
 import logging
 import socket
-from datetime import datetime
 from typing import Dict, Optional, Tuple
 
 from automation_credentials import MQTT_BROKER, MQTT_PORT, MQTT_PASS, MQTT_USER
 from paho.mqtt import client as mqtt_client
-
-try:
-    from astral import Observer
-    from astral.sun import sun
-except ImportError:
-    Observer = None
-    sun = None
 
 # --- Configuration ---
 
@@ -31,7 +23,8 @@ STRIP_STATE_TOPICS = [
 ]
 DIMMER_SET_TOPIC = "girier_01/11/set"
 DIMMER_STATE_TOPIC = "girier_01/11/get"
-MANUAL_TRIGGER_STATE_TOPIC = "stat/kitchenSpectral/manuallyTriggered"
+MANUAL_POWER_TRIGGER_STATE_TOPIC = "stat/kitchenSpectral/manuallyTriggeredPower"
+MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPIC = "stat/kitchenSpectral/manuallyTriggeredBrightness"
 LIGHT_STATE_TOPICS = STRIP_STATE_TOPICS + [DIMMER_STATE_TOPIC]
 SET_TO_STATE_TOPIC = {
     set_topic: state_topic
@@ -40,14 +33,13 @@ SET_TO_STATE_TOPIC = {
 SET_TO_STATE_TOPIC[DIMMER_SET_TOPIC] = DIMMER_STATE_TOPIC
 
 # Automation Settings
-IDLE_TIMEOUT = 600     # Time in seconds (10 minutes) before dimming
+IDLE_TIMEOUT = 300     # Time in seconds (5 minutes) before dimming
 DIM_BRIGHTNESS = 38    # Dimmed to 15% brightness level (0-254)
-OCCUPIED_BRIGHTEN_DELAY = 180
+OCCUPIED_BRIGHTEN_DELAY = 90 # brightening after 1.5 minutes of occupancy
 BRIGHTEN_BRIGHTNESS = 204  # Approximately 80% of the 0-254 level range
 WARM_COLOR_TEMP = 500  # Warmest color temp setting in mireds
+TRANSITION_SECONDS = 3  # Smooth brightness ramp duration for supported devices
 ASSUME_EMPTY_WHEN_PRESENCE_UNKNOWN = True
-LATITUDE: Optional[float] = 42.61281053611971
-LONGITUDE: Optional[float] = -70.68931574583688
 
 # Logging Setup
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
@@ -66,7 +58,7 @@ light_change_sources: Dict[str, Optional[str]] = {
 }
 auto_command_pending: Dict[str, bool] = {topic: False for topic in LIGHT_STATE_TOPICS}
 algorithm_dimmed: Dict[str, bool] = {topic: False for topic in LIGHT_STATE_TOPICS}
-missing_sun_config_logged = False
+manual_dim_cycle_active = False
 
 
 # Randomly assigned during development; static per implementation for readable,
@@ -87,6 +79,7 @@ def send_dim_command(client):
         {
             "brightness": DIM_BRIGHTNESS,
             "color_temp": WARM_COLOR_TEMP,
+            "transition": TRANSITION_SECONDS,
         }
     )
     dim_targets = [
@@ -115,7 +108,15 @@ def send_dim_command(client):
         )
 
     if dimmer_needs_command:
-        client.publish(DIMMER_SET_TOPIC, str(DIM_BRIGHTNESS))
+        client.publish(
+            DIMMER_SET_TOPIC,
+            json.dumps(
+                {
+                    "brightness": DIM_BRIGHTNESS,
+                    "transition": TRANSITION_SECONDS,
+                }
+            ),
+        )
         algorithm_dimmed[DIMMER_STATE_TOPIC] = True
         auto_command_pending[DIMMER_STATE_TOPIC] = True
         light_change_sources[DIMMER_STATE_TOPIC] = "auto"
@@ -124,48 +125,44 @@ def send_dim_command(client):
         )
 
 
-def _is_nighttime():
-    """Return True between today's sunset and sunrise in local time."""
-    global missing_sun_config_logged
-
-    if Observer is None or sun is None or LATITUDE is None or LONGITUDE is None:
-        if not missing_sun_config_logged:
-            logging.error("Astral and kitchen coordinates are required for nighttime brightening.")
-            missing_sun_config_logged = True
-        return False
-
-    now = datetime.now().astimezone()
-    observer = Observer(latitude=LATITUDE, longitude=LONGITUDE)
-    solar_events = sun(observer, date=now.date(), tzinfo=now.tzinfo)
-    return now >= solar_events["sunset"] or now < solar_events["sunrise"]
-
-
 def send_brighten_command(client):
-    """Raise only lights previously dimmed by this service and still on."""
+    """Raise any tracked on-lights that are below the target brightness."""
     targets = [
         set_topic
         for set_topic in STRIP_TOPICS
-        if algorithm_dimmed.get(SET_TO_STATE_TOPIC[set_topic], False)
-        and _needs_brightness_command(
+        if _needs_brightness_command(
             SET_TO_STATE_TOPIC[set_topic], BRIGHTEN_BRIGHTNESS, brighten=True
         )
     ]
 
     for topic in targets:
-        client.publish(topic, json.dumps({"brightness": BRIGHTEN_BRIGHTNESS}))
+        client.publish(
+            topic,
+            json.dumps(
+                {
+                    "brightness": BRIGHTEN_BRIGHTNESS,
+                    "transition": TRANSITION_SECONDS,
+                }
+            ),
+        )
         state_topic = SET_TO_STATE_TOPIC[topic]
         algorithm_dimmed[state_topic] = False
         auto_command_pending[state_topic] = True
         light_change_sources[state_topic] = "auto"
         logging.info("Raised kitchen light %s to brightness %s", topic, BRIGHTEN_BRIGHTNESS)
 
-    if (
-        algorithm_dimmed.get(DIMMER_STATE_TOPIC, False)
-        and _needs_brightness_command(
-            DIMMER_STATE_TOPIC, BRIGHTEN_BRIGHTNESS, brighten=True
-        )
+    if _needs_brightness_command(
+        DIMMER_STATE_TOPIC, BRIGHTEN_BRIGHTNESS, brighten=True
     ):
-        client.publish(DIMMER_SET_TOPIC, str(BRIGHTEN_BRIGHTNESS))
+        client.publish(
+            DIMMER_SET_TOPIC,
+            json.dumps(
+                {
+                    "brightness": BRIGHTEN_BRIGHTNESS,
+                    "transition": TRANSITION_SECONDS,
+                }
+            ),
+        )
         algorithm_dimmed[DIMMER_STATE_TOPIC] = False
         auto_command_pending[DIMMER_STATE_TOPIC] = True
         light_change_sources[DIMMER_STATE_TOPIC] = "auto"
@@ -185,7 +182,12 @@ def _cancel_presence_timer_if_running(reason):
 
 def _start_presence_timer_if_needed(client, loop):
     global presence_task
-    if not any(algorithm_dimmed.values()):
+    if not _any_light_on():
+        return
+    if manual_dim_cycle_active:
+        logging.info(
+            "Presence recovery timer suppressed during active manual dim cycle."
+        )
         return
     if presence_task is None or presence_task.done():
         presence_task = asyncio.run_coroutine_threadsafe(
@@ -317,16 +319,24 @@ async def handle_occupied(client):
 
 def on_message(client, userdata, msg, loop):
     """Handle incoming MQTT messages from the presence sensor."""
-    global idle_task, last_presence_state
+    global idle_task, last_presence_state, manual_dim_cycle_active
     try:
         raw_payload = msg.payload.decode(errors="replace").strip()
 
-        if msg.topic == MANUAL_TRIGGER_STATE_TOPIC:
+        if msg.topic == MANUAL_POWER_TRIGGER_STATE_TOPIC:
             if raw_payload.upper() in {"ON", "TRUE", "1", "YES"}:
+                logging.info("Manual kitchenSpectral ON/OFF event observed.")
+            return
+
+        if msg.topic == MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPIC:
+            if raw_payload.upper() in {"ON", "TRUE", "1", "YES"}:
+                manual_dim_cycle_active = True
                 for topic in algorithm_dimmed:
                     algorithm_dimmed[topic] = False
                 _cancel_presence_timer_if_running("Alexa manual intervention")
-                logging.info("Alexa manual trigger: auto-brightening suppressed.")
+                logging.info(
+                    "Manual dim cycle enabled via kitchenSpectral; auto-brightening suppressed."
+                )
             return
 
         data = json.loads(raw_payload)
@@ -346,9 +356,19 @@ def on_message(client, userdata, msg, loop):
                 _cancel_idle_timer_if_running("presence detected")
                 _start_presence_timer_if_needed(client, loop)
             elif _any_light_on():
+                if manual_dim_cycle_active:
+                    manual_dim_cycle_active = False
+                    logging.info(
+                        "Manual dim cycle cleared after vacancy; auto-brightening re-enabled."
+                    )
                 _cancel_presence_timer_if_running("presence cleared")
                 _start_idle_timer_if_needed(client, loop, "room empty and light on")
             else:
+                if manual_dim_cycle_active:
+                    manual_dim_cycle_active = False
+                    logging.info(
+                        "Manual dim cycle cleared after vacancy; auto-brightening re-enabled."
+                    )
                 _cancel_presence_timer_if_running("presence cleared")
                 logging.info("Room empty, lights are off; idle timer not started.")
 
@@ -423,8 +443,10 @@ def on_connect(client, userdata, flags, rc, properties=None):
         for topic in LIGHT_STATE_TOPICS:
             client.subscribe(topic)
             logging.info("Subscribed to %s", topic)
-        client.subscribe(MANUAL_TRIGGER_STATE_TOPIC)
-        logging.info("Subscribed to %s", MANUAL_TRIGGER_STATE_TOPIC)
+        client.subscribe(MANUAL_POWER_TRIGGER_STATE_TOPIC)
+        logging.info("Subscribed to %s", MANUAL_POWER_TRIGGER_STATE_TOPIC)
+        client.subscribe(MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPIC)
+        logging.info("Subscribed to %s", MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPIC)
     else:
         logging.error("MQTT connect failed. rc=%s", rc)
 
