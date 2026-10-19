@@ -1,7 +1,7 @@
 # Turns off both outlets of a Tasmota-powered Wyze Plug Outdoor at sunrise.
 # This is the inverse of yard_sunset_automation.py and uses the same MQTT
 # broker configuration, geolocation, and logging style as kitchen_morning.py.
-# File renamed from wyze_parking_tree_sunrise_off.py to yard_sunrise_automation.py
+# File renamed from wyzeParkingTree_sunrise_off.py to yard_sunrise_automation.py
 # to better describe the yard automation while preserving the original MQTT topics
 # and outlet behavior.
 import asyncio
@@ -29,8 +29,8 @@ LONGITUDE: Optional[float] = -70.68931574583688
 
 # Tasmota dual-outlet Wyze Plug Outdoor command topics for both relays.
 POWER_COMMAND_TOPICS = [
-    "cmnd/wyze_parking_tree/POWER1",
-    "cmnd/wyze_parking_tree/POWER2",
+    "cmnd/wyzeParkingTree/POWER1",
+    "cmnd/wyzeParkingTree/POWER2",
 ]
 GARDEN_LIGHTS_SET_TOPIC = "zigbee2mqtt/GardenLights/set"
 BACKDOOR_LIGHT_SET_TOPIC = "zigbee2mqtt/BackDoor/set"

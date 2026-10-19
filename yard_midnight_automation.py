@@ -2,7 +2,7 @@
 # Turns off only the first outlet of the dual-outlet Wyze WLPPO1 (Tasmota
 # reprogrammed) at midnight, unless a late-arrival override is active.
 # This follows the MQTT and logging style used in kitchen_morning.py.
-# File renamed from wyze_parking_tree_midnight_off.py to yard_midnight_automation.py
+# File renamed from wyzeParkingTree_midnight_off.py to yard_midnight_automation.py
 # to better reflect its yard/outdoor midnight automation role while preserving the
 # original MQTT topics and operational behavior.
 import asyncio
@@ -30,10 +30,10 @@ LATITUDE: Optional[float] = 42.61281053611971
 LONGITUDE: Optional[float] = -70.68931574583688
 
 # Tasmota dual-outlet command topics. Only POWER1 is toggled off.
-POWER1_OFF_TOPIC = "cmnd/wyze_parking_tree/POWER1"
+POWER1_OFF_TOPIC = "cmnd/wyzeParkingTree/POWER1"
 BACKDOOR_LIGHT_SET_TOPIC = "zigbee2mqtt/BackDoor/set"
-OVERRIDE_POWER_TOPIC = "stat/late_arrival_override/POWER"
-OVERRIDE_STATE_TOPIC = "stat/late_arrival_override/STATE"
+OVERRIDE_POWER_TOPIC = "stat/lateArrivalOverride/POWER"
+OVERRIDE_STATE_TOPIC = "stat/lateArrivalOverride/STATE"
 
 # Logging setup matches the kitchen automation style.
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")

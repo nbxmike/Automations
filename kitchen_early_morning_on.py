@@ -29,14 +29,14 @@ STRIP_STATE_TOPICS = [
     topic[:-4] if topic.endswith("/set") else topic for topic in STRIP_SET_TOPICS
 ]
 STRIP_GET_TOPICS = [f"{topic}/get" for topic in STRIP_STATE_TOPICS]
-DIMMER_SET_TOPIC = "girier_01/11/set"
-DIMMER_STATE_TOPIC = "girier_01/11/get"
+DIMMER_SET_TOPIC = "girier01/11/set"
+DIMMER_STATE_TOPIC = "girier01/11/get"
 GARDEN_LIGHTS_SET_TOPIC = "zigbee2mqtt/GardenLights/set"
 GARDEN_LIGHTS_STATE_TOPIC = "zigbee2mqtt/GardenLights"
 BACKDOOR_LIGHT_SET_TOPIC = "zigbee2mqtt/BackDoor/set"
 BACKDOOR_LIGHT_STATE_TOPIC = "zigbee2mqtt/BackDoor"
-POWER1_ON_TOPIC = "cmnd/wyze_parking_tree/POWER1"
-POWER1_STATE_TOPIC = "stat/wyze_parking_tree/POWER1"
+POWER1_ON_TOPIC = "cmnd/wyzeParkingTree/POWER1"
+POWER1_STATE_TOPIC = "stat/wyzeParkingTree/POWER1"
 DEVICE_STATE_TOPICS = (
     STRIP_STATE_TOPICS
     + [

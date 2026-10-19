@@ -27,7 +27,7 @@ STRIP_TOPICS = [
     "zigbee2mqtt/Fridge LED Strip/set",
     "zigbee2mqtt/Sink LED Strip/set",
 ]
-DIMMER_SET_TOPIC = "girier_01/11/set"
+DIMMER_SET_TOPIC = "girier01/11/set"
 
 # kitchenSpectral observation topics.
 KITCHEN_SPECTRAL_POWER_STATE_TOPIC = "stat/kitchenSpectral/POWER"

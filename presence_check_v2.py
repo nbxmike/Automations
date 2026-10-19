@@ -29,7 +29,7 @@ CLIENT_ID = OMADA_CLIENT_ID
 CLIENT_SECRET = OMADA_CLIENT_SECRET
 
 # House MQTT broker settings (same values used in kitchen automations).
-MQTT_ROOT_TOPIC = "phone_presence"
+MQTT_ROOT_TOPIC = "phonePresence"
 
 # Target phone MAC addresses (lower-case or upper-case, normalized in code)
 TARGET_MACS = {
@@ -74,7 +74,7 @@ def first_name_from_label(label):
         return "unknown"
     token = text.split()[0]
     token = token.split("'")[0]
-    clean = "".join(ch for ch in token if ch.isalnum() or ch in {"_", "-"})
+    clean = "".join(ch for ch in token if ch.isalnum() or ch == "-")
     return clean.lower() if clean else "unknown"
 
 
@@ -85,7 +85,7 @@ def build_phone_topic_map(target_macs):
     for mac, label in target_macs.items():
         leaf = first_name_from_label(label)
         if leaf in used_leaves:
-            leaf = f"{leaf}_{normalize_mac(mac).replace(':', '')[-4:]}"
+            leaf = f"{leaf}{normalize_mac(mac).replace(':', '')[-4:]}"
         used_leaves.add(leaf)
         topic_map[normalize_mac(mac)] = f"{MQTT_ROOT_TOPIC}/{leaf}"
     return topic_map

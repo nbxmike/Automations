@@ -45,7 +45,7 @@ from paho.mqtt import client as mqtt_client
 # MQTT broker used by the existing yard automations.
 
 # The Tasmota-controlled yard outlet used by the midnnight automation.
-POWER1_OFF_TOPIC = "cmnd/wyze_parking_tree/POWER1"
+POWER1_OFF_TOPIC = "cmnd/wyzeParkingTree/POWER1"
 
 # Omada controller settings.
 # This controller requires the OpenAPI client-credentials flow, which matches the

@@ -4,10 +4,10 @@
 #
 # Conditions required before shutdown:
 # - Local time is between 21:00 and sunrise.
-# - late_arrival_override is not ON.
-# - phone_presence/everyone is true for 10 continuous minutes.
+# - lateArrivalOverride is not ON.
+# - phonePresence/everyone is true for 10 continuous minutes.
 #
-# After shutdown, if wyze_parking_tree and/or BackDoor is turned back ON while
+# After shutdown, if wyzeParkingTree and/or BackDoor is turned back ON while
 # conditions still match, the 10-minute timer is restarted.
 import asyncio
 import json
@@ -32,16 +32,16 @@ except ImportError:
 LATITUDE: Optional[float] = 42.61281053611971
 LONGITUDE: Optional[float] = -70.68931574583688
 
-POWER1_OFF_TOPIC = "cmnd/wyze_parking_tree/POWER1"
+POWER1_OFF_TOPIC = "cmnd/wyzeParkingTree/POWER1"
 BACKDOOR_LIGHT_SET_TOPIC = "zigbee2mqtt/BackDoor/set"
 
-POWER1_STATE_TOPIC = "stat/wyze_parking_tree/POWER1"
-POWER2_STATE_TOPIC = "stat/wyze_parking_tree/POWER2"
+POWER1_STATE_TOPIC = "stat/wyzeParkingTree/POWER1"
+POWER2_STATE_TOPIC = "stat/wyzeParkingTree/POWER2"
 BACKDOOR_STATE_TOPIC = "zigbee2mqtt/BackDoor"
 
-OVERRIDE_POWER_TOPIC = "stat/late_arrival_override/POWER"
-OVERRIDE_STATE_TOPIC = "stat/late_arrival_override/STATE"
-PHONE_EVERYONE_TOPIC = "phone_presence/everyone"
+OVERRIDE_POWER_TOPIC = "stat/lateArrivalOverride/POWER"
+OVERRIDE_STATE_TOPIC = "stat/lateArrivalOverride/STATE"
+PHONE_EVERYONE_TOPIC = "phonePresence/everyone"
 
 NIGHT_START_HOUR = 21
 EVERYONE_HOLD_SECONDS = 600
@@ -216,7 +216,7 @@ def on_message(client, userdata, msg):
             last_override_state_time = datetime.now(timezone.utc)
             logging.info(f"Updated {OVERRIDE_POWER_TOPIC} -> {value}")
             if value:
-                _clear_countdown("late_arrival_override turned ON")
+                _clear_countdown("lateArrivalOverride turned ON")
             return
 
         if msg.topic == OVERRIDE_STATE_TOPIC:
@@ -246,7 +246,7 @@ def on_message(client, userdata, msg):
                 f"time_utc={last_override_state_time.isoformat().replace('+00:00', 'Z')}"
             )
             if last_override_power_state is True:
-                _clear_countdown("late_arrival_override JSON state is ON")
+                _clear_countdown("lateArrivalOverride JSON state is ON")
             return
 
         if msg.topic == PHONE_EVERYONE_TOPIC:
@@ -260,7 +260,7 @@ def on_message(client, userdata, msg):
             if value:
                 if phone_everyone_true_since is None:
                     phone_everyone_true_since = datetime.now(timezone.utc)
-                    logging.info("phone_presence/everyone is TRUE. Started hold tracking.")
+                    logging.info("phonePresence/everyone is TRUE. Started hold tracking.")
                 if _eligible_to_countdown() and _outside_lights_on() and countdown_started_at is None:
                     _start_or_restart_countdown("everyone became TRUE")
             else:

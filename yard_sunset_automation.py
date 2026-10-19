@@ -1,7 +1,7 @@
 # Turns on both outlets of a Tasmota-powered Wyze Plug Outdoor at sunset.
 # This follows the same MQTT broker setup, geolocation logic, and logging style
 # used in kitchen_morning.py.
-# File renamed from wyze_parking_tree_sunset.py to yard_sunset_automation.py
+# File renamed from wyzeParkingTree_sunset.py to yard_sunset_automation.py
 # to better describe the yard automation while preserving the original MQTT topics
 # and outlet behavior.
 import asyncio
@@ -29,17 +29,17 @@ LATITUDE: Optional[float] = 42.61281053611971
 LONGITUDE: Optional[float] = -70.68931574583688
 
 # Tasmota dual-outlet Wyze Plug Outdoor command/state topics.
-# MQTT Full Topic in the device info screen is "cmnd/wyze_parking_tree/",
-# and the state topics are reported under "stat/wyze_parking_tree/".
+# MQTT Full Topic in the device info screen is "cmnd/wyzeParkingTree/",
+# and the state topics are reported under "stat/wyzeParkingTree/".
 POWER_COMMAND_TOPICS = [
-    "cmnd/wyze_parking_tree/POWER1",
-    "cmnd/wyze_parking_tree/POWER2",
+    "cmnd/wyzeParkingTree/POWER1",
+    "cmnd/wyzeParkingTree/POWER2",
 ]
 GARDEN_LIGHTS_SET_TOPIC = "zigbee2mqtt/GardenLights/set"
 BACKDOOR_LIGHT_SET_TOPIC = "zigbee2mqtt/BackDoor/set"
 POWER_STATE_TOPICS = [
-    "stat/wyze_parking_tree/POWER1",
-    "stat/wyze_parking_tree/POWER2",
+    "stat/wyzeParkingTree/POWER1",
+    "stat/wyzeParkingTree/POWER2",
 ]
 
 # Logging setup matches the kitchen script style.

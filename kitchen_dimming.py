@@ -21,8 +21,8 @@ STRIP_TOPICS = [
 STRIP_STATE_TOPICS = [
     topic[:-4] if topic.endswith("/set") else topic for topic in STRIP_TOPICS
 ]
-DIMMER_SET_TOPIC = "girier_01/11/set"
-DIMMER_STATE_TOPIC = "girier_01/11/get"
+DIMMER_SET_TOPIC = "girier01/11/set"
+DIMMER_STATE_TOPIC = "girier01/11/get"
 MANUAL_POWER_TRIGGER_STATE_TOPIC = "stat/kitchenSpectral/manuallyTriggeredPower"
 MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPIC = "stat/kitchenSpectral/manuallyTriggeredBrightness"
 LIGHT_STATE_TOPICS = STRIP_STATE_TOPICS + [DIMMER_STATE_TOPIC]

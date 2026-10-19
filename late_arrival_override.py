@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Virtual MQTT device host used by Alexa routines and automations.
-# Historically this file managed only late_arrival_override, but it now hosts
+# Historically this file managed only lateArrivalOverride, but it now hosts
 # multiple virtual devices while keeping the original script/service name.
 import asyncio
 import json
@@ -28,26 +28,41 @@ LATITUDE: Optional[float] = 42.61281053611971
 LONGITUDE: Optional[float] = -70.68931574583688
 
 # Virtual device definitions hosted by this script.
-# - late_arrival_override: blocks yard midnight shutdown when ON.
+# - lateArrivalOverride: blocks yard midnight shutdown when ON.
 # - kitchenSpectral: Alexa-visible kitchen dimmer and manual-change markers.
+# - backyardSpectral: Alexa-visible backyard dimmer and manual-change markers.
+LATE_ARRIVAL_OVERRIDE = "lateArrivalOverride"
+KITCHEN_SPECTRAL = "kitchenSpectral"
+BACKYARD_SPECTRAL = "backyardSpectral"
 VIRTUAL_DEVICES = {
-    "late_arrival_override": {
+    LATE_ARRIVAL_OVERRIDE: {
         "reset_at_sunrise": True,
         "auto_reset_seconds": None,
     },
-    "kitchenSpectral": {
+    KITCHEN_SPECTRAL: {
+        "reset_at_sunrise": False,
+        "auto_reset_seconds": None,
+    },
+    BACKYARD_SPECTRAL: {
         "reset_at_sunrise": False,
         "auto_reset_seconds": None,
     },
 }
-KITCHEN_SPECTRAL = "kitchenSpectral"
 KITCHEN_SPECTRAL_LEVEL_TOPICS = {
-    f"cmnd/{KITCHEN_SPECTRAL}/BRIGHTNESS",
-    f"cmnd/{KITCHEN_SPECTRAL}/BRIGHTNESS_WITH_ONOFF",
+    f"cmnd/{KITCHEN_SPECTRAL}/brightness",
+    f"cmnd/{KITCHEN_SPECTRAL}/brightnessWithOnOff",
 }
 KITCHEN_SPECTRAL_COLOR_TEMP_TOPICS = {
-    f"cmnd/{KITCHEN_SPECTRAL}/COLOR_TEMP",
-    f"cmnd/{KITCHEN_SPECTRAL}/COLOR_TEMP_WITH_ONOFF",
+    f"cmnd/{KITCHEN_SPECTRAL}/colorTemp",
+    f"cmnd/{KITCHEN_SPECTRAL}/colorTempWithOnOff",
+}
+BACKYARD_SPECTRAL_LEVEL_TOPICS = {
+    f"cmnd/{BACKYARD_SPECTRAL}/brightness",
+    f"cmnd/{BACKYARD_SPECTRAL}/brightnessWithOnOff",
+}
+BACKYARD_SPECTRAL_COLOR_TEMP_TOPICS = {
+    f"cmnd/{BACKYARD_SPECTRAL}/colorTemp",
+    f"cmnd/{BACKYARD_SPECTRAL}/colorTempWithOnOff",
 }
 KITCHEN_SPECTRAL_MANUAL_POWER_TOPIC = (
     f"stat/{KITCHEN_SPECTRAL}/manuallyTriggeredPower"
@@ -58,18 +73,42 @@ KITCHEN_SPECTRAL_MANUAL_BRIGHTNESS_TOPIC = (
 KITCHEN_SPECTRAL_MANUAL_COLOR_TEMP_TOPIC = (
     f"stat/{KITCHEN_SPECTRAL}/manuallyTriggeredColorTemp"
 )
+BACKYARD_SPECTRAL_MANUAL_POWER_TOPIC = (
+    f"stat/{BACKYARD_SPECTRAL}/manuallyTriggeredPower"
+)
+BACKYARD_SPECTRAL_MANUAL_BRIGHTNESS_TOPIC = (
+    f"stat/{BACKYARD_SPECTRAL}/manuallyTriggeredBrightness"
+)
+BACKYARD_SPECTRAL_MANUAL_COLOR_TEMP_TOPIC = (
+    f"stat/{BACKYARD_SPECTRAL}/manuallyTriggeredColorTemp"
+)
 MANUAL_TRIGGER_CLEAR_SECONDS = 5
 BRIGHTNESS_MIN = 1
 BRIGHTNESS_MAX = 254
 COLOR_TEMP_MIN = 153
 COLOR_TEMP_MAX = 500
+LATE_ARRIVAL_OVERRIDE_HA_COMMAND_TOPIC = f"lights/{LATE_ARRIVAL_OVERRIDE}/set"
+LATE_ARRIVAL_OVERRIDE_HA_STATE_TOPIC = f"lights/{LATE_ARRIVAL_OVERRIDE}/state"
+LATE_ARRIVAL_OVERRIDE_HA_DISCOVERY_TOPIC = (
+    f"homeassistant/light/{LATE_ARRIVAL_OVERRIDE}/light/config"
+)
+KITCHEN_SPECTRAL_HA_COMMAND_TOPIC = f"lights/{KITCHEN_SPECTRAL}/set"
+KITCHEN_SPECTRAL_HA_STATE_TOPIC = f"lights/{KITCHEN_SPECTRAL}/state"
+KITCHEN_SPECTRAL_HA_DISCOVERY_TOPIC = (
+    f"homeassistant/light/{KITCHEN_SPECTRAL}/light/config"
+)
+BACKYARD_SPECTRAL_HA_COMMAND_TOPIC = f"lights/{BACKYARD_SPECTRAL}/set"
+BACKYARD_SPECTRAL_HA_STATE_TOPIC = f"lights/{BACKYARD_SPECTRAL}/state"
+BACKYARD_SPECTRAL_HA_DISCOVERY_TOPIC = (
+    f"homeassistant/light/{BACKYARD_SPECTRAL}/light/config"
+)
 
 # Logging setup matches the kitchen automation style.
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
 device_state: Dict[str, bool] = {name: False for name in VIRTUAL_DEVICES}
-device_brightness = {KITCHEN_SPECTRAL: 127}
-device_color_temp = {KITCHEN_SPECTRAL: 500}
+device_brightness = {KITCHEN_SPECTRAL: 127, BACKYARD_SPECTRAL: 127}
+device_color_temp = {KITCHEN_SPECTRAL: 500, BACKYARD_SPECTRAL: 500}
 last_state_change_utc: Dict[str, datetime] = {
     name: datetime.now(timezone.utc) for name in VIRTUAL_DEVICES
 }
@@ -136,9 +175,16 @@ def power_command_topics(device_name: str):
 
 def command_topics(device_name: str):
     topics = power_command_topics(device_name)
+    if device_name == LATE_ARRIVAL_OVERRIDE:
+        topics.append(LATE_ARRIVAL_OVERRIDE_HA_COMMAND_TOPIC)
     if device_name == KITCHEN_SPECTRAL:
         topics.extend(KITCHEN_SPECTRAL_LEVEL_TOPICS)
         topics.extend(KITCHEN_SPECTRAL_COLOR_TEMP_TOPICS)
+        topics.append(KITCHEN_SPECTRAL_HA_COMMAND_TOPIC)
+    if device_name == BACKYARD_SPECTRAL:
+        topics.extend(BACKYARD_SPECTRAL_LEVEL_TOPICS)
+        topics.extend(BACKYARD_SPECTRAL_COLOR_TEMP_TOPICS)
+        topics.append(BACKYARD_SPECTRAL_HA_COMMAND_TOPIC)
     return topics
 
 
@@ -165,15 +211,15 @@ def publish_state(client, device_name: str):
     client.publish(f"stat/{device_name}/POWER", state_value, retain=True)
     logging.info(f"Published {device_name} POWER={state_value}")
 
-    if device_name == KITCHEN_SPECTRAL:
+    if device_name in {KITCHEN_SPECTRAL, BACKYARD_SPECTRAL}:
         client.publish(
-            f"stat/{KITCHEN_SPECTRAL}/BRIGHTNESS",
-            str(device_brightness[KITCHEN_SPECTRAL]),
+            f"stat/{device_name}/brightness",
+            str(device_brightness[device_name]),
             retain=True,
         )
         client.publish(
-            f"stat/{KITCHEN_SPECTRAL}/COLOR_TEMP",
-            str(device_color_temp[KITCHEN_SPECTRAL]),
+            f"stat/{device_name}/colorTemp",
+            str(device_color_temp[device_name]),
             retain=True,
         )
 
@@ -183,11 +229,117 @@ def publish_state(client, device_name: str):
         "state": state_value,
         "time_utc": time_utc,
     }
-    if device_name == KITCHEN_SPECTRAL:
-        state_payload_data["brightness"] = device_brightness[KITCHEN_SPECTRAL]
-        state_payload_data["color_temp"] = device_color_temp[KITCHEN_SPECTRAL]
+    if device_name in {KITCHEN_SPECTRAL, BACKYARD_SPECTRAL}:
+        state_payload_data["brightness"] = device_brightness[device_name]
+        state_payload_data["color_temp"] = device_color_temp[device_name]
     state_payload = json.dumps(state_payload_data)
     client.publish(f"stat/{device_name}/STATE", state_payload, retain=True)
+    if device_name == LATE_ARRIVAL_OVERRIDE:
+        home_assistant_state = {
+            "state": state_value,
+        }
+        client.publish(
+            LATE_ARRIVAL_OVERRIDE_HA_STATE_TOPIC,
+            json.dumps(home_assistant_state),
+            retain=True,
+        )
+    if device_name == KITCHEN_SPECTRAL:
+        home_assistant_state = {
+            "state": state_value,
+            "brightness": device_brightness[KITCHEN_SPECTRAL],
+            "color_temp": device_color_temp[KITCHEN_SPECTRAL],
+            "color_mode": "ct",
+        }
+        client.publish(
+            KITCHEN_SPECTRAL_HA_STATE_TOPIC,
+            json.dumps(home_assistant_state),
+            retain=True,
+        )
+    if device_name == BACKYARD_SPECTRAL:
+        home_assistant_state = {
+            "state": state_value,
+            "brightness": device_brightness[BACKYARD_SPECTRAL],
+            "color_temp": device_color_temp[BACKYARD_SPECTRAL],
+            "color_mode": "ct",
+        }
+        client.publish(
+            BACKYARD_SPECTRAL_HA_STATE_TOPIC,
+            json.dumps(home_assistant_state),
+            retain=True,
+        )
+
+
+def publish_discovery(client):
+    late_arrival_override_discovery_payload = {
+        "name": LATE_ARRIVAL_OVERRIDE,
+        "unique_id": "virtualLateArrivalOverride01",
+        "command_topic": LATE_ARRIVAL_OVERRIDE_HA_COMMAND_TOPIC,
+        "state_topic": LATE_ARRIVAL_OVERRIDE_HA_STATE_TOPIC,
+        "device": {
+            "identifiers": ["lateArrivalOverride_id"],
+            "name": LATE_ARRIVAL_OVERRIDE,
+            "model": "LTW001",
+            "manufacturer": "Custom",
+        },
+    }
+    client.publish(
+        LATE_ARRIVAL_OVERRIDE_HA_DISCOVERY_TOPIC,
+        json.dumps(late_arrival_override_discovery_payload),
+        retain=True,
+    )
+    logging.info(
+        "Published discovery for %s to %s",
+        LATE_ARRIVAL_OVERRIDE,
+        LATE_ARRIVAL_OVERRIDE_HA_DISCOVERY_TOPIC,
+    )
+
+    kitchen_spectral_discovery_payload = {
+        "name": KITCHEN_SPECTRAL,
+        "unique_id": "virtualKitchenSpectral01",
+        "command_topic": KITCHEN_SPECTRAL_HA_COMMAND_TOPIC,
+        "state_topic": KITCHEN_SPECTRAL_HA_STATE_TOPIC,
+        "brightness": True,
+        "color_mode": True,
+        "supported_color_modes": ["ct"],
+        "min_mireds": COLOR_TEMP_MIN,
+        "max_mireds": COLOR_TEMP_MAX,
+        "device": {
+            "identifiers": ["kitchenSpectral_id"],
+            "name": KITCHEN_SPECTRAL,
+            "model": "LTW001",
+            "manufacturer": "Custom",
+        },
+    }
+    client.publish(
+        KITCHEN_SPECTRAL_HA_DISCOVERY_TOPIC,
+        json.dumps(kitchen_spectral_discovery_payload),
+        retain=True,
+    )
+    logging.info("Published discovery for kitchenSpectral to %s", KITCHEN_SPECTRAL_HA_DISCOVERY_TOPIC)
+
+    backyard_spectral_discovery_payload = {
+        "name": BACKYARD_SPECTRAL,
+        "unique_id": "virtualBackyardSpectral01",
+        "command_topic": BACKYARD_SPECTRAL_HA_COMMAND_TOPIC,
+        "state_topic": BACKYARD_SPECTRAL_HA_STATE_TOPIC,
+        "brightness": True,
+        "color_mode": True,
+        "supported_color_modes": ["ct"],
+        "min_mireds": COLOR_TEMP_MIN,
+        "max_mireds": COLOR_TEMP_MAX,
+        "device": {
+            "identifiers": ["backyardSpectral_id"],
+            "name": BACKYARD_SPECTRAL,
+            "model": "LTW001",
+            "manufacturer": "Custom",
+        },
+    }
+    client.publish(
+        BACKYARD_SPECTRAL_HA_DISCOVERY_TOPIC,
+        json.dumps(backyard_spectral_discovery_payload),
+        retain=True,
+    )
+    logging.info("Published discovery for backyardSpectral to %s", BACKYARD_SPECTRAL_HA_DISCOVERY_TOPIC)
 
 
 def set_device_state(client, device_name: str, new_state: bool):
@@ -220,38 +372,146 @@ def _signal_manual_trigger(client, topic: str):
     manual_trigger_timers[topic].start()
 
 
-def _handle_brightness_command(client, topic: str, payload: str):
+def _handle_brightness_command(client, topic: str, payload: str, device_name: str):
     try:
         brightness = int(float(payload))
     except ValueError:
-        logging.warning("Ignored invalid kitchenSpectral brightness: %r", payload)
+        logging.warning("Ignored invalid %s brightness: %r", device_name, payload)
         return
 
     brightness = max(BRIGHTNESS_MIN, min(BRIGHTNESS_MAX, brightness))
-    device_brightness[KITCHEN_SPECTRAL] = brightness
-    if topic.endswith("BRIGHTNESS_WITH_ONOFF"):
-        device_state[KITCHEN_SPECTRAL] = True
-    last_state_change_utc[KITCHEN_SPECTRAL] = datetime.now(timezone.utc)
-    _signal_manual_trigger(client, KITCHEN_SPECTRAL_MANUAL_BRIGHTNESS_TOPIC)
-    publish_state(client, KITCHEN_SPECTRAL)
-    logging.info("Received kitchenSpectral brightness command: %s", brightness)
+    device_brightness[device_name] = brightness
+    if topic.endswith("brightnessWithOnOff"):
+        device_state[device_name] = True
+    last_state_change_utc[device_name] = datetime.now(timezone.utc)
+    if device_name == KITCHEN_SPECTRAL:
+        _signal_manual_trigger(client, KITCHEN_SPECTRAL_MANUAL_BRIGHTNESS_TOPIC)
+    elif device_name == BACKYARD_SPECTRAL:
+        _signal_manual_trigger(client, BACKYARD_SPECTRAL_MANUAL_BRIGHTNESS_TOPIC)
+    publish_state(client, device_name)
+    logging.info("Received %s brightness command: %s", device_name, brightness)
 
 
-def _handle_color_temp_command(client, topic: str, payload: str):
+def _handle_color_temp_command(client, topic: str, payload: str, device_name: str):
     try:
         color_temp = int(float(payload))
     except ValueError:
-        logging.warning("Ignored invalid kitchenSpectral color_temp: %r", payload)
+        logging.warning("Ignored invalid %s color_temp: %r", device_name, payload)
         return
 
     color_temp = max(COLOR_TEMP_MIN, min(COLOR_TEMP_MAX, color_temp))
-    device_color_temp[KITCHEN_SPECTRAL] = color_temp
-    if topic.endswith("COLOR_TEMP_WITH_ONOFF"):
-        device_state[KITCHEN_SPECTRAL] = True
-    last_state_change_utc[KITCHEN_SPECTRAL] = datetime.now(timezone.utc)
-    _signal_manual_trigger(client, KITCHEN_SPECTRAL_MANUAL_COLOR_TEMP_TOPIC)
-    publish_state(client, KITCHEN_SPECTRAL)
-    logging.info("Received kitchenSpectral color_temp command: %s", color_temp)
+    device_color_temp[device_name] = color_temp
+    if topic.endswith("colorTempWithOnOff"):
+        device_state[device_name] = True
+    last_state_change_utc[device_name] = datetime.now(timezone.utc)
+    if device_name == KITCHEN_SPECTRAL:
+        _signal_manual_trigger(client, KITCHEN_SPECTRAL_MANUAL_COLOR_TEMP_TOPIC)
+    elif device_name == BACKYARD_SPECTRAL:
+        _signal_manual_trigger(client, BACKYARD_SPECTRAL_MANUAL_COLOR_TEMP_TOPIC)
+    publish_state(client, device_name)
+    logging.info("Received %s color_temp command: %s", device_name, color_temp)
+
+
+def _handle_spectral_json_command(client, payload: str, device_name: str):
+    try:
+        data = json.loads(payload)
+    except json.JSONDecodeError:
+        logging.warning("Ignored invalid %s JSON command: %r", device_name, payload)
+        return
+
+    if not isinstance(data, dict):
+        logging.warning("Ignored non-object %s JSON command: %r", device_name, payload)
+        return
+
+    state_updated = False
+
+    if "state" in data:
+        state_value = _normalize_bool(data["state"])
+        if state_value is None:
+            logging.warning("Ignored invalid %s state in JSON command: %r", device_name, data["state"])
+            return
+        device_state[device_name] = state_value
+        if device_name == KITCHEN_SPECTRAL:
+            _signal_manual_trigger(client, KITCHEN_SPECTRAL_MANUAL_POWER_TOPIC)
+        elif device_name == BACKYARD_SPECTRAL:
+            _signal_manual_trigger(client, BACKYARD_SPECTRAL_MANUAL_POWER_TOPIC)
+        state_updated = True
+
+    if "brightness" in data:
+        try:
+            brightness = int(float(data["brightness"]))
+        except (TypeError, ValueError):
+            logging.warning(
+                "Ignored invalid %s brightness in JSON command: %r",
+                device_name,
+                data["brightness"],
+            )
+            return
+        device_brightness[device_name] = max(
+            BRIGHTNESS_MIN, min(BRIGHTNESS_MAX, brightness)
+        )
+        if device_name == KITCHEN_SPECTRAL:
+            _signal_manual_trigger(client, KITCHEN_SPECTRAL_MANUAL_BRIGHTNESS_TOPIC)
+        elif device_name == BACKYARD_SPECTRAL:
+            _signal_manual_trigger(client, BACKYARD_SPECTRAL_MANUAL_BRIGHTNESS_TOPIC)
+        state_updated = True
+
+    color_temp_input = None
+    if "color_temp" in data:
+        color_temp_input = data["color_temp"]
+    elif "color" in data and isinstance(data["color"], dict) and "temp" in data["color"]:
+        color_temp_input = data["color"]["temp"]
+
+    if color_temp_input is not None:
+        try:
+            color_temp = int(float(color_temp_input))
+        except (TypeError, ValueError):
+            logging.warning(
+                "Ignored invalid %s color_temp in JSON command: %r",
+                device_name,
+                color_temp_input,
+            )
+            return
+        device_color_temp[device_name] = max(
+            COLOR_TEMP_MIN, min(COLOR_TEMP_MAX, color_temp)
+        )
+        if device_name == KITCHEN_SPECTRAL:
+            _signal_manual_trigger(client, KITCHEN_SPECTRAL_MANUAL_COLOR_TEMP_TOPIC)
+        elif device_name == BACKYARD_SPECTRAL:
+            _signal_manual_trigger(client, BACKYARD_SPECTRAL_MANUAL_COLOR_TEMP_TOPIC)
+        state_updated = True
+
+    if not state_updated:
+        logging.warning("Ignored %s JSON command with no supported fields: %r", device_name, payload)
+        return
+
+    last_state_change_utc[device_name] = datetime.now(timezone.utc)
+    publish_state(client, device_name)
+    logging.info("Processed %s JSON command on %s", device_name, f"lights/{device_name}/set")
+
+
+def _handle_on_off_json_command(client, device_name: str, payload: str, topic: str):
+    try:
+        data = json.loads(payload)
+    except json.JSONDecodeError:
+        logging.warning("Ignored invalid %s JSON command: %r", device_name, payload)
+        return
+
+    if not isinstance(data, dict):
+        logging.warning("Ignored non-object %s JSON command: %r", device_name, payload)
+        return
+
+    if "state" not in data:
+        logging.warning("Ignored %s JSON command with no state field: %r", device_name, payload)
+        return
+
+    value = _normalize_bool(data["state"])
+    if value is None:
+        logging.warning("Ignored invalid %s state in JSON command: %r", device_name, data["state"])
+        return
+
+    set_device_state(client, device_name, value)
+    logging.info("Processed %s JSON command on %s: %s", device_name, topic, value)
 
 
 def on_message(client, userdata, msg):
@@ -263,10 +523,30 @@ def on_message(client, userdata, msg):
             return
 
         if msg.topic in KITCHEN_SPECTRAL_LEVEL_TOPICS:
-            _handle_brightness_command(client, msg.topic, payload)
+            _handle_brightness_command(client, msg.topic, payload, KITCHEN_SPECTRAL)
             return
         if msg.topic in KITCHEN_SPECTRAL_COLOR_TEMP_TOPICS:
-            _handle_color_temp_command(client, msg.topic, payload)
+            _handle_color_temp_command(client, msg.topic, payload, KITCHEN_SPECTRAL)
+            return
+        if msg.topic in BACKYARD_SPECTRAL_LEVEL_TOPICS:
+            _handle_brightness_command(client, msg.topic, payload, BACKYARD_SPECTRAL)
+            return
+        if msg.topic in BACKYARD_SPECTRAL_COLOR_TEMP_TOPICS:
+            _handle_color_temp_command(client, msg.topic, payload, BACKYARD_SPECTRAL)
+            return
+        if msg.topic == LATE_ARRIVAL_OVERRIDE_HA_COMMAND_TOPIC:
+            _handle_on_off_json_command(
+                client,
+                LATE_ARRIVAL_OVERRIDE,
+                payload,
+                LATE_ARRIVAL_OVERRIDE_HA_COMMAND_TOPIC,
+            )
+            return
+        if msg.topic == KITCHEN_SPECTRAL_HA_COMMAND_TOPIC:
+            _handle_spectral_json_command(client, payload, KITCHEN_SPECTRAL)
+            return
+        if msg.topic == BACKYARD_SPECTRAL_HA_COMMAND_TOPIC:
+            _handle_spectral_json_command(client, payload, BACKYARD_SPECTRAL)
             return
 
         value = _normalize_bool(payload)
@@ -288,6 +568,7 @@ def on_connect(client, userdata, flags, rc, properties=None):
         for topic in all_power_command_topics():
             client.subscribe(topic)
             logging.info(f"Subscribed to {topic}")
+        publish_discovery(client)
 
         # Default all hosted virtual devices to OFF on startup.
         for device_name in VIRTUAL_DEVICES:
@@ -295,6 +576,9 @@ def on_connect(client, userdata, flags, rc, properties=None):
         client.publish(KITCHEN_SPECTRAL_MANUAL_POWER_TOPIC, "OFF", retain=True)
         client.publish(KITCHEN_SPECTRAL_MANUAL_BRIGHTNESS_TOPIC, "OFF", retain=True)
         client.publish(KITCHEN_SPECTRAL_MANUAL_COLOR_TEMP_TOPIC, "OFF", retain=True)
+        client.publish(BACKYARD_SPECTRAL_MANUAL_POWER_TOPIC, "OFF", retain=True)
+        client.publish(BACKYARD_SPECTRAL_MANUAL_BRIGHTNESS_TOPIC, "OFF", retain=True)
+        client.publish(BACKYARD_SPECTRAL_MANUAL_COLOR_TEMP_TOPIC, "OFF", retain=True)
     else:
         logging.error(f"Failed to connect to MQTT broker. rc={rc}")
 
@@ -307,7 +591,7 @@ def on_disconnect(client, userdata, flags, rc, properties=None):
 
 
 def handle_shutdown(signum, frame):
-    logging.info("Shutdown signal received. Exiting late_arrival_override service.")
+    logging.info("Shutdown signal received. Exiting lateArrivalOverride service.")
     raise SystemExit(0)
 
 
@@ -337,7 +621,7 @@ async def main():
 
     client.loop_start()
     logging.info(
-        "Virtual device host is running (late_arrival_override + kitchenSpectral)."
+        "Virtual device host is running (lateArrivalOverride + kitchenSpectral + backyardSpectral)."
     )
 
     last_quarter_hour = None
@@ -349,9 +633,9 @@ async def main():
 
             if sunrise is not None:
                 if now >= sunrise and not sunrise_reset_done:
-                    if device_state.get("late_arrival_override", False):
-                        logging.info("Sunrise reached. Resetting late_arrival_override to OFF.")
-                        set_device_state(client, "late_arrival_override", False)
+                    if device_state.get(LATE_ARRIVAL_OVERRIDE, False):
+                        logging.info("Sunrise reached. Resetting lateArrivalOverride to OFF.")
+                        set_device_state(client, LATE_ARRIVAL_OVERRIDE, False)
                     sunrise_reset_done = True
                 elif now < sunrise:
                     sunrise_reset_done = False
