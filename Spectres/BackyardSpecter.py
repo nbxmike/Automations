@@ -15,7 +15,7 @@ if str(ROOT_DIR) not in sys.path:
 from automation_credentials import MQTT_BROKER, MQTT_PASS, MQTT_PORT, MQTT_USER
 from paho.mqtt import client as mqtt_client
 
-DEVICE_NAME = "backyardSpectre"
+DEVICE_NAME = "backyardGhost"
 HA_COMMAND_TOPIC = f"lights/{DEVICE_NAME}/set"
 HA_STATE_TOPIC = f"lights/{DEVICE_NAME}/state"
 HA_DISCOVERY_TOPIC = f"homeassistant/light/{DEVICE_NAME}/light/config"
@@ -32,13 +32,13 @@ MANUAL_TRIGGER_CLEAR_SECONDS = 5
 BRIGHTNESS_MIN = 1
 BRIGHTNESS_MAX = 254
 COLOR_TEMP_MIN = 153
-COLOR_TEMP_MAX = 500
+COLOR_TEMP_MAX = 454
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
 device_state = False
 device_brightness = 127
-device_color_temp = 500
+device_color_temp = COLOR_TEMP_MAX
 manual_trigger_timers = {}
 
 
@@ -56,13 +56,9 @@ def _normalize_bool(value):
     return None
 
 
-def _publish_state(client):
+def _get_state():
     state_value = "ON" if device_state else "OFF"
-    client.publish(f"stat/{DEVICE_NAME}/POWER", state_value, retain=True)
-    client.publish(f"stat/{DEVICE_NAME}/brightness", str(device_brightness), retain=True)
-    client.publish(f"stat/{DEVICE_NAME}/colorTemp", str(device_color_temp), retain=True)
-
-    home_assistant_state = {
+    return {
         "device": DEVICE_NAME,
         "state": state_value,
         "brightness": device_brightness,
@@ -70,8 +66,18 @@ def _publish_state(client):
         "color_mode": "ct",
         "time_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
     }
-    client.publish(HA_STATE_TOPIC, json.dumps(home_assistant_state), retain=True)
+
+
+def _publish_state(client):
+    state = _get_state()
+    state_value = state["state"]
+    client.publish(f"stat/{DEVICE_NAME}/POWER", state_value, retain=True)
+    client.publish(f"stat/{DEVICE_NAME}/brightness", str(device_brightness), retain=True)
+    client.publish(f"stat/{DEVICE_NAME}/colorTemp", str(device_color_temp), retain=True)
+
+    client.publish(HA_STATE_TOPIC, json.dumps(state), retain=True)
     logging.info("Published %s state=%s brightness=%s color_temp=%s", DEVICE_NAME, state_value, device_brightness, device_color_temp)
+    return state
 
 
 def _publish_discovery(client):
@@ -82,12 +88,10 @@ def _publish_discovery(client):
         "state_topic": HA_STATE_TOPIC,
         "brightness": True,
         "color_temp": True,
-        "color_mode": True,
-        "supported_color_modes": ["ct"],
         "min_mireds": COLOR_TEMP_MIN,
         "max_mireds": COLOR_TEMP_MAX,
         "device": {
-            "identifiers": ["backyardSpectre_id"],
+            "identifiers": ["backyardGhost_id"],
             "name": DEVICE_NAME,
             "model": "LTW001",
             "manufacturer": "Custom",
@@ -275,7 +279,7 @@ def main():
     signal.signal(signal.SIGINT, handle_shutdown)
 
     hostname = socket.gethostname()
-    client_id = f"{hostname}_{DEVICE_NAME}_backyardSpectre"
+    client_id = f"{hostname}_{DEVICE_NAME}_backyardGhost"
     logging.info("Using MQTT client_id: %s", client_id)
 
     client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2, client_id=client_id)

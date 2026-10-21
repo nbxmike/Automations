@@ -53,7 +53,7 @@ OMADA_PASSWORD = "your_omada_password"
 | `kitchen_early_morning_on.py` | `kitchen_early_morning_on.service` | When presence is detected between 05:00 and sunrise, turns on the kitchen LED strips (warm white, 350 mireds, brightness 200), outlet 1 of the Wyze plug, and the BackDoor Zigbee light at 20% brightness. |
 | `kitchen_dimming.py` | `kitchen_dimming.service` | Dims kitchen lights after 10 minutes of vacancy. If the service dimmed lights, it restores them to about 80% after 3 continuous minutes of occupancy between sunset and sunrise, unless Alexa manually intervenes. |
 | `kitchen_spectre_router.py` | `kitchen_spectre_router.service` | Listens for `kitchenSpectre` virtual-device set commands and forwards equivalent power/brightness/color-temp commands to the physical kitchen strips and dimmer topics used by `kitchen_dimming.py`. |
-| `backyard_spectre_router.py` | `backyard_spectre_router.service` | Listens for `backyardSpectre` virtual-device set commands and forwards ON/brightness/color-temp commands to the Wyze outdoor plug, GardenLights, and BackDoor. OFF only applies to `wyzeParkingTree/POWER1`. |
+| `backyard_spectre_router.py` | `backyard_spectre_router.service` | Listens for `backyardGhost` virtual-device set commands and forwards ON/brightness/color-temp commands to the Wyze outdoor plug, GardenLights, and BackDoor. OFF only applies to `wyzeParkingTree/POWER1`. |
 | `yard_sunset_automation.py` | `yard_sunset_automation.service` | Turns on both outlets of the Tasmota Wyze Plug Outdoor at sunset and turns on the BackDoor Zigbee light at 20% brightness. |
 | `yard_midnight_automation.py` | `yard_midnight_automation.service` | Turns off outlet 1 of the Wyze plug and turns off the BackDoor Zigbee light at midnight, unless the late-arrival override is ON. An override older than 6 hours is treated as stale and ignored. |
 | `yard_sunrise_automation.py` | `yard_sunrise_automation.service` | Turns off both outlets of the Wyze plug at sunrise and turns off the BackDoor Zigbee light. |
@@ -79,7 +79,7 @@ The current virtual devices are split into dedicated scripts:
 
 - `arrivalOverride`: override switch used by `yard_midnight_automation.py` and `yard_presence_night_off.py`.
 - `kitchenSpectre`: Alexa-visible kitchen dimmable light with manual-trigger markers for kitchen automations.
-- `backyardSpectre`: Alexa-visible backyard dimmable light with matching manual-trigger markers.
+- `backyardGhost`: Alexa-visible backyard dimmable light with matching manual-trigger markers.
 
 Example Alexa routine behavior:
 

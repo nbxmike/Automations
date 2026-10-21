@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Routes backyardSpectre virtual commands to the yard devices.
+# Routes backyardGhost virtual commands to the yard devices.
 import json
 import logging
 import socket
@@ -9,7 +9,7 @@ from automation_credentials import MQTT_BROKER, MQTT_PORT, MQTT_PASS, MQTT_USER
 from paho.mqtt import client as mqtt_client
 
 # --- Configuration ---
-BACKYARD_VIRTUAL_NAMES = ("backyardSpectre",)
+BACKYARD_VIRTUAL_NAMES = ("backyardGhost",)
 POWER1_OFF_TOPIC = "cmnd/wyzeParkingTree/POWER1"
 POWER2_ON_TOPIC = "cmnd/wyzeParkingTree/POWER2"
 POWER_COMMAND_TOPICS = [
@@ -22,6 +22,7 @@ BRIGHTNESS_MIN = 1
 BRIGHTNESS_MAX = 254
 COLOR_TEMP_MIN = 153
 COLOR_TEMP_MAX = 500
+ALEXA_COLOR_TEMP_MAX = 454
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
@@ -74,7 +75,13 @@ def _clamp_color_temp(value):
         parsed = int(float(value))
     except (TypeError, ValueError):
         return None
-    return max(COLOR_TEMP_MIN, min(COLOR_TEMP_MAX, parsed))
+    scaled = round(
+        COLOR_TEMP_MIN
+        + (parsed - COLOR_TEMP_MIN)
+        * (COLOR_TEMP_MAX - COLOR_TEMP_MIN)
+        / (ALEXA_COLOR_TEMP_MAX - COLOR_TEMP_MIN)
+    )
+    return max(COLOR_TEMP_MIN, min(COLOR_TEMP_MAX, scaled))
 
 
 def _publish_lights_payload(client, topic: str, *, state: Optional[bool] = None, brightness: Optional[int] = None, color_temp: Optional[int] = None):
@@ -84,7 +91,7 @@ def _publish_lights_payload(client, topic: str, *, state: Optional[bool] = None,
     # Garden lights and BackDoor are not switched off here by the virtual device OFF action.
     if state is False:
         client.publish(POWER1_OFF_TOPIC, "OFF")
-        logging.info("Forwarded %s -> %s payload=%s", "backyardSpectre off", POWER1_OFF_TOPIC, "OFF")
+        logging.info("Forwarded %s -> %s payload=%s", "backyardGhost off", POWER1_OFF_TOPIC, "OFF")
         return
 
     if state is not None:
@@ -105,7 +112,7 @@ def _publish_lights_payload(client, topic: str, *, state: Optional[bool] = None,
 
     serialized = json.dumps(payload)
     client.publish(topic, serialized)
-    logging.info("Forwarded %s -> %s payload=%s", "backyardSpectre", topic, serialized)
+    logging.info("Forwarded %s -> %s payload=%s", "backyardGhost", topic, serialized)
 
 
 def _publish_to_physical_devices(
@@ -191,7 +198,7 @@ def _handle_ha_set_json(client, topic: str, payload: str):
 
 
 def route_backyard_spectre_command(client, topic: str, payload: str):
-    """Route a backyardSpectre command to the real yard devices."""
+    """Route a backyardGhost command to the real yard devices."""
     kind = TOPIC_TO_KIND.get(topic)
     if kind is None:
         return
@@ -247,7 +254,7 @@ def on_message(client, userdata, msg):
 
 def on_connect(client, userdata, flags, rc, properties=None):
     if rc == 0:
-        logging.info("Connected to MQTT broker for backyardSpectre router.")
+        logging.info("Connected to MQTT broker for backyardGhost router.")
         for topic in sorted(TOPIC_TO_KIND):
             client.subscribe(topic)
             logging.info("Subscribed to %s", topic)

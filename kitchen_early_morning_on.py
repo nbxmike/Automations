@@ -21,6 +21,8 @@ except ImportError:
 # --- Configuration ---
 
 PRESENCE_SENSOR_TOPIC = "zigbee2mqtt/Kitchen Presence"
+FOYER_STAIR_MOTION_TOPIC = "zigbee2mqtt/FoyerStairMotion"
+PRESENCE_SENSOR_TOPICS = (PRESENCE_SENSOR_TOPIC, FOYER_STAIR_MOTION_TOPIC)
 STRIP_SET_TOPICS = [
     "zigbee2mqtt/Fridge LED Strip/set",
     "zigbee2mqtt/Sink LED Strip/set",
@@ -58,7 +60,7 @@ LONGITUDE: Optional[float] = -70.68931574583688
 # Logging Setup
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
-last_presence_state: Optional[bool] = None
+last_motion_state: Dict[str, Optional[bool]] = {topic: None for topic in PRESENCE_SENSOR_TOPICS}
 device_state: Dict[str, Optional[bool]] = {topic: None for topic in DEVICE_STATE_TOPICS}
 missing_sun_config_logged = False
 
@@ -190,26 +192,26 @@ def send_early_morning_on_command(client):
 
 
 def on_message(client, userdata, msg):
-    """Handle incoming presence messages and trigger early morning lights."""
-    global last_presence_state
-
+    """Handle incoming motion/presence messages and trigger early morning lights."""
     try:
         raw_payload = msg.payload.decode(errors="replace")
         data = json.loads(raw_payload)
 
-        if msg.topic == PRESENCE_SENSOR_TOPIC:
+        if msg.topic in PRESENCE_SENSOR_TOPICS:
             is_present = _extract_presence(data)
             if is_present is None:
                 return
 
-            if last_presence_state is not None and is_present == last_presence_state:
+            previous_state = last_motion_state.get(msg.topic)
+            if previous_state is not None and is_present == previous_state:
                 return
 
-            last_presence_state = is_present
+            last_motion_state[msg.topic] = is_present
 
             if is_present and _is_before_sunrise_after_five_am():
                 logging.info(
-                    "Morning presence trigger matched. Turning kitchen lights and supported outlets on only when off or unknown."
+                    "Morning motion trigger matched from %s. Turning kitchen lights and supported outlets on only when off or unknown.",
+                    msg.topic,
                 )
                 send_early_morning_on_command(client)
             return
@@ -250,8 +252,9 @@ def _request_light_states(client):
 def on_connect(client, userdata, flags, rc, properties=None):
     if rc == 0:
         logging.info("Connected to MQTT broker.")
-        client.subscribe(PRESENCE_SENSOR_TOPIC)
-        logging.info(f"Subscribed to {PRESENCE_SENSOR_TOPIC}")
+        for topic in PRESENCE_SENSOR_TOPICS:
+            client.subscribe(topic)
+            logging.info(f"Subscribed to {topic}")
 
         for topic in DEVICE_STATE_TOPICS:
             client.subscribe(topic)
