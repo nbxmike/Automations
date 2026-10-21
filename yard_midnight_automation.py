@@ -32,8 +32,14 @@ LONGITUDE: Optional[float] = -70.68931574583688
 # Tasmota dual-outlet command topics. Only POWER1 is toggled off.
 POWER1_OFF_TOPIC = "cmnd/wyzeParkingTree/POWER1"
 BACKDOOR_LIGHT_SET_TOPIC = "zigbee2mqtt/BackDoor/set"
-OVERRIDE_POWER_TOPIC = "stat/lateArrivalOverride/POWER"
-OVERRIDE_STATE_TOPIC = "stat/lateArrivalOverride/STATE"
+OVERRIDE_POWER_TOPICS = (
+    "stat/lateArrivalOverride/POWER",
+    "stat/arrivalOverride/POWER",
+)
+OVERRIDE_STATE_TOPICS = (
+    "stat/lateArrivalOverride/STATE",
+    "stat/arrivalOverride/STATE",
+)
 
 # Logging setup matches the kitchen automation style.
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
@@ -136,21 +142,22 @@ def on_message(client, userdata, msg):
     try:
         payload = msg.payload.decode(errors="replace").strip()
 
-        if msg.topic == OVERRIDE_POWER_TOPIC:
+        if msg.topic in OVERRIDE_POWER_TOPICS:
             value = _normalize_bool(payload)
             if value is None:
-                logging.warning(f"Ignored unsupported override POWER payload: {payload!r}")
+                logging.warning(f"Ignored unsupported override POWER payload on {msg.topic}: {payload!r}")
                 return
 
             last_override_power_state = value
             last_override_state_time = datetime.now(timezone.utc)
-            logging.info(f"Updated {OVERRIDE_POWER_TOPIC} -> {value}")
+            logging.info(f"Updated {msg.topic} -> {value}")
+            return
 
-        elif msg.topic == OVERRIDE_STATE_TOPIC:
+        if msg.topic in OVERRIDE_STATE_TOPICS:
             try:
                 data = json.loads(payload)
             except json.JSONDecodeError:
-                logging.warning(f"Ignored invalid JSON payload on {OVERRIDE_STATE_TOPIC}: {payload!r}")
+                logging.warning(f"Ignored invalid JSON payload on {msg.topic}: {payload!r}")
                 return
 
             state_value = data.get("state")
@@ -166,13 +173,13 @@ def on_message(client, userdata, msg):
                         time_utc.replace("Z", "+00:00")
                     ).astimezone(timezone.utc)
                 except ValueError:
-                    logging.warning(f"Bad time_utc value in {OVERRIDE_STATE_TOPIC}: {time_utc!r}")
+                    logging.warning(f"Bad time_utc value in {msg.topic}: {time_utc!r}")
                     last_override_state_time = datetime.now(timezone.utc)
             else:
                 last_override_state_time = datetime.now(timezone.utc)
 
             logging.info(
-                f"Updated {OVERRIDE_STATE_TOPIC}: state={last_override_power_state}, "
+                f"Updated {msg.topic}: state={last_override_power_state}, "
                 f"time_utc={last_override_state_time.isoformat().replace('+00:00', 'Z')}"
             )
     except Exception:
@@ -182,7 +189,7 @@ def on_message(client, userdata, msg):
 def on_connect(client, userdata, flags, rc, properties=None):
     if rc == 0:
         logging.info("Connected to MQTT broker.")
-        for topic in (OVERRIDE_POWER_TOPIC, OVERRIDE_STATE_TOPIC):
+        for topic in OVERRIDE_POWER_TOPICS + OVERRIDE_STATE_TOPICS:
             client.subscribe(topic)
             logging.info(f"Subscribed to {topic}")
     else:

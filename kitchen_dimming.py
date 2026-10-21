@@ -23,8 +23,18 @@ STRIP_STATE_TOPICS = [
 ]
 DIMMER_SET_TOPIC = "girier01/11/set"
 DIMMER_STATE_TOPIC = "girier01/11/get"
-MANUAL_POWER_TRIGGER_STATE_TOPIC = "stat/kitchenSpectral/manuallyTriggeredPower"
-MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPIC = "stat/kitchenSpectral/manuallyTriggeredBrightness"
+KITCHEN_VIRTUAL_DEVICE_NAMES = (
+    "kitchenSpectral",
+    "kitchenSpectre",
+)
+MANUAL_POWER_TRIGGER_STATE_TOPICS = {
+    f"stat/{device_name}/manuallyTriggeredPower"
+    for device_name in KITCHEN_VIRTUAL_DEVICE_NAMES
+}
+MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPICS = {
+    f"stat/{device_name}/manuallyTriggeredBrightness"
+    for device_name in KITCHEN_VIRTUAL_DEVICE_NAMES
+}
 LIGHT_STATE_TOPICS = STRIP_STATE_TOPICS + [DIMMER_STATE_TOPIC]
 SET_TO_STATE_TOPIC = {
     set_topic: state_topic
@@ -323,19 +333,19 @@ def on_message(client, userdata, msg, loop):
     try:
         raw_payload = msg.payload.decode(errors="replace").strip()
 
-        if msg.topic == MANUAL_POWER_TRIGGER_STATE_TOPIC:
+        if msg.topic in MANUAL_POWER_TRIGGER_STATE_TOPICS:
             if raw_payload.upper() in {"ON", "TRUE", "1", "YES"}:
-                logging.info("Manual kitchenSpectral ON/OFF event observed.")
+                logging.info("Manual virtual kitchen ON/OFF event observed on %s.", msg.topic)
             return
 
-        if msg.topic == MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPIC:
+        if msg.topic in MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPICS:
             if raw_payload.upper() in {"ON", "TRUE", "1", "YES"}:
                 manual_dim_cycle_active = True
                 for topic in algorithm_dimmed:
                     algorithm_dimmed[topic] = False
                 _cancel_presence_timer_if_running("Alexa manual intervention")
                 logging.info(
-                    "Manual dim cycle enabled via kitchenSpectral; auto-brightening suppressed."
+                    "Manual dim cycle enabled via virtual kitchen device; auto-brightening suppressed."
                 )
             return
 
@@ -443,10 +453,12 @@ def on_connect(client, userdata, flags, rc, properties=None):
         for topic in LIGHT_STATE_TOPICS:
             client.subscribe(topic)
             logging.info("Subscribed to %s", topic)
-        client.subscribe(MANUAL_POWER_TRIGGER_STATE_TOPIC)
-        logging.info("Subscribed to %s", MANUAL_POWER_TRIGGER_STATE_TOPIC)
-        client.subscribe(MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPIC)
-        logging.info("Subscribed to %s", MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPIC)
+        for topic in sorted(MANUAL_POWER_TRIGGER_STATE_TOPICS):
+            client.subscribe(topic)
+            logging.info("Subscribed to %s", topic)
+        for topic in sorted(MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPICS):
+            client.subscribe(topic)
+            logging.info("Subscribed to %s", topic)
     else:
         logging.error("MQTT connect failed. rc=%s", rc)
 

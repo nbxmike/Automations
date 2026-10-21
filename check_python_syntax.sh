@@ -30,13 +30,17 @@ cd "$SCRIPT_DIR" || exit 1
 python_files=(
     "default_color_temp.py"
     "kitchen_dimming.py"
+    "kitchen_spectre_router.py"
+    "backyard_spectre_router.py"
     "kitchen_early_morning_on.py"
     "presence_check_v2.py"
     "yard_presence_night_off.py"
     "yard_sunset_automation.py"
     "yard_sunrise_automation.py"
     "yard_midnight_automation.py"
-    "late_arrival_override.py"
+    "Spectres/arrivalOverride.py"
+    "Spectres/kitchenSpecter.py"
+    "Spectres/BackyardSpecter.py"
 )
 
 # Keep this list aligned with install/reinstall script exclusions.

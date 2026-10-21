@@ -39,8 +39,14 @@ POWER1_STATE_TOPIC = "stat/wyzeParkingTree/POWER1"
 POWER2_STATE_TOPIC = "stat/wyzeParkingTree/POWER2"
 BACKDOOR_STATE_TOPIC = "zigbee2mqtt/BackDoor"
 
-OVERRIDE_POWER_TOPIC = "stat/lateArrivalOverride/POWER"
-OVERRIDE_STATE_TOPIC = "stat/lateArrivalOverride/STATE"
+OVERRIDE_POWER_TOPICS = (
+    "stat/lateArrivalOverride/POWER",
+    "stat/arrivalOverride/POWER",
+)
+OVERRIDE_STATE_TOPICS = (
+    "stat/lateArrivalOverride/STATE",
+    "stat/arrivalOverride/STATE",
+)
 PHONE_EVERYONE_TOPIC = "phonePresence/everyone"
 
 NIGHT_START_HOUR = 21
@@ -206,24 +212,24 @@ def on_message(client, userdata, msg):
     try:
         payload = msg.payload.decode(errors="replace").strip()
 
-        if msg.topic == OVERRIDE_POWER_TOPIC:
+        if msg.topic in OVERRIDE_POWER_TOPICS:
             value = _normalize_bool(payload)
             if value is None:
-                logging.warning(f"Ignored unsupported override POWER payload: {payload!r}")
+                logging.warning(f"Ignored unsupported override POWER payload on {msg.topic}: {payload!r}")
                 return
 
             last_override_power_state = value
             last_override_state_time = datetime.now(timezone.utc)
-            logging.info(f"Updated {OVERRIDE_POWER_TOPIC} -> {value}")
+            logging.info(f"Updated {msg.topic} -> {value}")
             if value:
-                _clear_countdown("lateArrivalOverride turned ON")
+                _clear_countdown(f"{msg.topic} turned ON")
             return
 
-        if msg.topic == OVERRIDE_STATE_TOPIC:
+        if msg.topic in OVERRIDE_STATE_TOPICS:
             try:
                 data = json.loads(payload)
             except json.JSONDecodeError:
-                logging.warning(f"Ignored invalid JSON payload on {OVERRIDE_STATE_TOPIC}: {payload!r}")
+                logging.warning(f"Ignored invalid JSON payload on {msg.topic}: {payload!r}")
                 return
 
             state_value = _normalize_bool(data.get("state"))
@@ -242,11 +248,11 @@ def on_message(client, userdata, msg):
                 last_override_state_time = datetime.now(timezone.utc)
 
             logging.info(
-                f"Updated {OVERRIDE_STATE_TOPIC}: state={last_override_power_state}, "
+                f"Updated {msg.topic}: state={last_override_power_state}, "
                 f"time_utc={last_override_state_time.isoformat().replace('+00:00', 'Z')}"
             )
             if last_override_power_state is True:
-                _clear_countdown("lateArrivalOverride JSON state is ON")
+                _clear_countdown(f"{msg.topic} JSON state is ON")
             return
 
         if msg.topic == PHONE_EVERYONE_TOPIC:
@@ -308,8 +314,8 @@ def on_connect(client, userdata, flags, rc, properties=None):
     if rc == 0:
         logging.info("Connected to MQTT broker.")
         for topic in (
-            OVERRIDE_POWER_TOPIC,
-            OVERRIDE_STATE_TOPIC,
+            *OVERRIDE_POWER_TOPICS,
+            *OVERRIDE_STATE_TOPICS,
             PHONE_EVERYONE_TOPIC,
             POWER1_STATE_TOPIC,
             POWER2_STATE_TOPIC,

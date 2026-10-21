@@ -4,8 +4,23 @@
 set -euo pipefail
 
 AUTOMATIONS_DIR="/home/pi/automations"
+SPECTRES_DIR="$AUTOMATIONS_DIR/Spectres"
 SYSTEMD_DIR="/etc/systemd/system"
 EXCLUDED_SERVICES=("omada_presence_automation")
+SERVICE_FILES=()
+
+resolve_service_path() {
+    local candidate="$1"
+    if [ -f "$AUTOMATIONS_DIR/$candidate.service" ]; then
+        echo "$AUTOMATIONS_DIR/$candidate.service"
+        return 0
+    fi
+    if [ -f "$SPECTRES_DIR/$candidate.service" ]; then
+        echo "$SPECTRES_DIR/$candidate.service"
+        return 0
+    fi
+    return 1
+}
 
 is_excluded_service() {
     local candidate="$1"
@@ -20,8 +35,10 @@ is_excluded_service() {
 usage() {
     echo "Usage: sudo $0 <service_name>[.service] | --all"
     echo
-    echo "Available services in $AUTOMATIONS_DIR:"
-    for f in "$AUTOMATIONS_DIR"/*.service; do
+    echo "Available services in $AUTOMATIONS_DIR and $SPECTRES_DIR:"
+    shopt -s nullglob
+    SERVICE_FILES=("$AUTOMATIONS_DIR"/*.service "$SPECTRES_DIR"/*.service)
+    for f in "${SERVICE_FILES[@]}"; do
         [ -e "$f" ] || continue
         name="$(basename "$f" .service)"
         is_excluded_service "$name" && continue
@@ -54,7 +71,11 @@ fi
 
 # Strip CRLF from all automation files before validation. This avoids systemd
 # and Python parsing errors when scripts have been edited on a Windows system.
-sed -i 's/\r$//' /home/pi/automations/*.service /home/pi/automations/*.py /home/pi/automations/*.sh
+shopt -s nullglob
+for file in "$AUTOMATIONS_DIR"/*.service "$AUTOMATIONS_DIR"/*.py "$AUTOMATIONS_DIR"/*.sh "$SPECTRES_DIR"/*.service "$SPECTRES_DIR"/*.py "$SPECTRES_DIR"/*.sh; do
+    [ -e "$file" ] || continue
+    sed -i 's/\r$//' "$file"
+done
 
 if [ ! -d "$AUTOMATIONS_DIR" ]; then
     fail "Automation directory not found: $AUTOMATIONS_DIR" \
@@ -88,7 +109,9 @@ fi
 # Build the list of services to install.
 services=()
 if [ "$1" = "--all" ]; then
-    for f in "$AUTOMATIONS_DIR"/*.service; do
+    shopt -s nullglob
+    SERVICE_FILES=("$AUTOMATIONS_DIR"/*.service "$SPECTRES_DIR"/*.service)
+    for f in "${SERVICE_FILES[@]}"; do
         [ -e "$f" ] || continue
         name="$(basename "$f" .service)"
         is_excluded_service "$name" && continue
@@ -113,22 +136,22 @@ fi
 # Validate every selected service before touching the system.
 echo "Validating ${#services[@]} service(s)..."
 for name in "${services[@]}"; do
-    unit="$AUTOMATIONS_DIR/$name.service"
+    unit="$(resolve_service_path "$name")"
 
     if [[ ! "$name" =~ ^[A-Za-z0-9_]+$ ]]; then
         fail "Service file name '$name.service' contains unsupported characters." \
             "Rename it to use only letters, digits and underscores, then re-run."
     fi
 
-    if [ ! -f "$unit" ]; then
-        fail "Service file not found: $unit" \
-            "Copy $name.service into $AUTOMATIONS_DIR, or check the spelling." \
+    if [ -z "$unit" ]; then
+        fail "Service file not found for '$name' in $AUTOMATIONS_DIR or $SPECTRES_DIR" \
+            "Copy $name.service into the automation root or Spectres folder, or check the spelling." \
             "Run '$0' with no arguments to list available services."
     fi
 
     if grep -q $'\r' "$unit"; then
         fail "$unit has Windows (CRLF) line endings, which systemd cannot parse reliably." \
-            "Fix with: sed -i 's/\\r\$//' $AUTOMATIONS_DIR/*.service $AUTOMATIONS_DIR/*.py $AUTOMATIONS_DIR/*.sh"
+            "Fix with: sed -i 's/\\r\$//' $AUTOMATIONS_DIR/*.service $AUTOMATIONS_DIR/*.py $AUTOMATIONS_DIR/*.sh $AUTOMATIONS_DIR/Spectres/*.service $AUTOMATIONS_DIR/Spectres/*.py $AUTOMATIONS_DIR/Spectres/*.sh"
     fi
 
     exec_line="$(grep -m1 '^ExecStart=' "$unit" || true)"
@@ -141,18 +164,18 @@ for name in "${services[@]}"; do
     if [ -z "$script_path" ]; then
         fail "Could not find a .py script in $unit:" \
             "$exec_line" \
-            "Edit ExecStart to: /usr/bin/python3 $AUTOMATIONS_DIR/<script>.py"
+            "Edit ExecStart to: /usr/bin/python3 /home/pi/automations/<script>.py or /home/pi/automations/Spectres/<script>.py"
     fi
 
-    if [ "$(dirname "$script_path")" != "$AUTOMATIONS_DIR" ]; then
-        fail "$name.service runs a script outside $AUTOMATIONS_DIR:" \
+    if [[ "$script_path" != "$AUTOMATIONS_DIR"* && "$script_path" != "$SPECTRES_DIR"* ]]; then
+        fail "$name.service runs a script outside $AUTOMATIONS_DIR or $SPECTRES_DIR:" \
             "$script_path" \
-            "Move the script to $AUTOMATIONS_DIR and update ExecStart/WorkingDirectory in $unit."
+            "Move the script under $AUTOMATIONS_DIR and update ExecStart/WorkingDirectory in $unit."
     fi
 
     if [ ! -f "$script_path" ]; then
         fail "Python script for $name.service is missing: $script_path" \
-            "Copy $(basename "$script_path") into $AUTOMATIONS_DIR," \
+            "Copy $(basename "$script_path") into the matching automation folder," \
             "or modify ExecStart in $unit to point to the correct script location."
     fi
 
@@ -168,7 +191,8 @@ done
 echo
 echo "Copying service files to $SYSTEMD_DIR..."
 for name in "${services[@]}"; do
-    install -o root -g root -m 0644 "$AUTOMATIONS_DIR/$name.service" "$SYSTEMD_DIR/$name.service" \
+    unit="$(resolve_service_path "$name")"
+    install -o root -g root -m 0644 "$unit" "$SYSTEMD_DIR/$name.service" \
         || fail "Could not copy $name.service to $SYSTEMD_DIR."
     echo "  Copied $name.service"
 done

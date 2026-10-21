@@ -29,11 +29,26 @@ STRIP_TOPICS = [
 ]
 DIMMER_SET_TOPIC = "girier01/11/set"
 
-# kitchenSpectral observation topics.
-KITCHEN_SPECTRAL_POWER_STATE_TOPIC = "stat/kitchenSpectral/POWER"
-MANUAL_POWER_TRIGGER_STATE_TOPIC = "stat/kitchenSpectral/manuallyTriggeredPower"
-MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPIC = "stat/kitchenSpectral/manuallyTriggeredBrightness"
-MANUAL_COLOR_TEMP_TRIGGER_STATE_TOPIC = "stat/kitchenSpectral/manuallyTriggeredColorTemp"
+# Virtual kitchen-device observation topics.
+KITCHEN_VIRTUAL_DEVICE_NAMES = (
+    "kitchenSpectral",
+    "kitchenSpectre",
+)
+KITCHEN_POWER_STATE_TOPICS = {
+    f"stat/{device_name}/POWER" for device_name in KITCHEN_VIRTUAL_DEVICE_NAMES
+}
+MANUAL_POWER_TRIGGER_STATE_TOPICS = {
+    f"stat/{device_name}/manuallyTriggeredPower"
+    for device_name in KITCHEN_VIRTUAL_DEVICE_NAMES
+}
+MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPICS = {
+    f"stat/{device_name}/manuallyTriggeredBrightness"
+    for device_name in KITCHEN_VIRTUAL_DEVICE_NAMES
+}
+MANUAL_COLOR_TEMP_TRIGGER_STATE_TOPICS = {
+    f"stat/{device_name}/manuallyTriggeredColorTemp"
+    for device_name in KITCHEN_VIRTUAL_DEVICE_NAMES
+}
 
 # Defaults applied after a manual ON event when no explicit value was sent.
 POST_ON_DELAY_SECONDS = 5
@@ -107,7 +122,7 @@ async def _apply_defaults_after_delay(client):
     try:
         await asyncio.sleep(POST_ON_DELAY_SECONDS)
         if last_kitchen_power_state is not True:
-            logging.info("KitchenSpectral is no longer ON; skipping default apply.")
+            logging.info("Virtual kitchen device is no longer ON; skipping default apply.")
             return
 
         if not manual_brightness_seen:
@@ -166,7 +181,7 @@ def _start_default_apply_timer(client, loop):
     )
     pending_default_task.add_done_callback(_log_task_result)
     logging.info(
-        "Detected manual kitchenSpectral ON. Waiting %ss before applying defaults.",
+        "Detected manual virtual-kitchen ON. Waiting %ss before applying defaults.",
         POST_ON_DELAY_SECONDS,
     )
 
@@ -176,36 +191,36 @@ def on_message(client, userdata, msg, loop):
     payload = msg.payload.decode(errors="replace").strip()
     topic = msg.topic
 
-    if topic == KITCHEN_SPECTRAL_POWER_STATE_TOPIC:
+    if topic in KITCHEN_POWER_STATE_TOPICS:
         parsed = _normalize_bool(payload)
         if parsed is None:
-            logging.warning("Ignored unsupported kitchenSpectral POWER state: %r", payload)
+            logging.warning("Ignored unsupported virtual-kitchen POWER state: %r", payload)
             return
         last_kitchen_power_state = parsed
-        logging.info("Observed kitchenSpectral POWER=%s", "ON" if parsed else "OFF")
+        logging.info("Observed virtual-kitchen POWER=%s from %s", "ON" if parsed else "OFF", topic)
         if not parsed:
-            _cancel_pending_default_task("kitchenSpectral turned OFF")
+            _cancel_pending_default_task(f"{topic} turned OFF")
         return
 
-    if topic == MANUAL_POWER_TRIGGER_STATE_TOPIC:
+    if topic in MANUAL_POWER_TRIGGER_STATE_TOPICS:
         parsed = _normalize_bool(payload)
         if parsed is True:
             if last_kitchen_power_state is True:
                 _start_default_apply_timer(client, loop)
             else:
                 logging.info(
-                    "Manual power trigger observed while kitchenSpectral not ON; skipping."
+                    "Manual power trigger observed while virtual-kitchen device not ON; skipping."
                 )
         return
 
-    if topic == MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPIC:
+    if topic in MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPICS:
         parsed = _normalize_bool(payload)
         if parsed is True:
             manual_brightness_seen = True
             logging.info("Manual brightness command detected during ON window.")
         return
 
-    if topic == MANUAL_COLOR_TEMP_TRIGGER_STATE_TOPIC:
+    if topic in MANUAL_COLOR_TEMP_TRIGGER_STATE_TOPICS:
         parsed = _normalize_bool(payload)
         if parsed is True:
             manual_color_temp_seen = True
@@ -216,12 +231,16 @@ def on_message(client, userdata, msg, loop):
 def on_connect(client, userdata, flags, rc, properties=None):
     if rc == 0:
         logging.info("MQTT connected.")
-        for topic in [
-            KITCHEN_SPECTRAL_POWER_STATE_TOPIC,
-            MANUAL_POWER_TRIGGER_STATE_TOPIC,
-            MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPIC,
-            MANUAL_COLOR_TEMP_TRIGGER_STATE_TOPIC,
-        ]:
+        for topic in sorted(KITCHEN_POWER_STATE_TOPICS):
+            client.subscribe(topic)
+            logging.info("Subscribed to %s", topic)
+        for topic in sorted(MANUAL_POWER_TRIGGER_STATE_TOPICS):
+            client.subscribe(topic)
+            logging.info("Subscribed to %s", topic)
+        for topic in sorted(MANUAL_BRIGHTNESS_TRIGGER_STATE_TOPICS):
+            client.subscribe(topic)
+            logging.info("Subscribed to %s", topic)
+        for topic in sorted(MANUAL_COLOR_TEMP_TRIGGER_STATE_TOPICS):
             client.subscribe(topic)
             logging.info("Subscribed to %s", topic)
     else:

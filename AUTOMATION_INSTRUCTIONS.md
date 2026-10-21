@@ -52,13 +52,14 @@ OMADA_PASSWORD = "your_omada_password"
 | `kitchen_morning.py` | `kitchen_morning.service` | When kitchen presence is detected between 05:00 and sunrise, and all lights are off, turns on the kitchen LED strips and the Girier dimmer. |
 | `kitchen_early_morning_on.py` | `kitchen_early_morning_on.service` | When presence is detected between 05:00 and sunrise, turns on the kitchen LED strips (warm white, 350 mireds, brightness 200), outlet 1 of the Wyze plug, and the BackDoor Zigbee light at 20% brightness. |
 | `kitchen_dimming.py` | `kitchen_dimming.service` | Dims kitchen lights after 10 minutes of vacancy. If the service dimmed lights, it restores them to about 80% after 3 continuous minutes of occupancy between sunset and sunrise, unless Alexa manually intervenes. |
+| `kitchen_spectre_router.py` | `kitchen_spectre_router.service` | Listens for `kitchenSpectre` virtual-device set commands and forwards equivalent power/brightness/color-temp commands to the physical kitchen strips and dimmer topics used by `kitchen_dimming.py`. |
+| `backyard_spectre_router.py` | `backyard_spectre_router.service` | Listens for `backyardSpectre` virtual-device set commands and forwards ON/brightness/color-temp commands to the Wyze outdoor plug, GardenLights, and BackDoor. OFF only applies to `wyzeParkingTree/POWER1`. |
 | `yard_sunset_automation.py` | `yard_sunset_automation.service` | Turns on both outlets of the Tasmota Wyze Plug Outdoor at sunset and turns on the BackDoor Zigbee light at 20% brightness. |
 | `yard_midnight_automation.py` | `yard_midnight_automation.service` | Turns off outlet 1 of the Wyze plug and turns off the BackDoor Zigbee light at midnight, unless the late-arrival override is ON. An override older than 6 hours is treated as stale and ignored. |
 | `yard_sunrise_automation.py` | `yard_sunrise_automation.service` | Turns off both outlets of the Wyze plug at sunrise and turns off the BackDoor Zigbee light. |
-| `yard_presence_night_off.py` | `yard_presence_night_off.service` | Between 21:00 and sunrise, when `phone_presence/everyone` has stayed true for 10 minutes and `late_arrival_override` is OFF, turns off outside lights. If Wyze/BackDoor turns back ON, the timer restarts. |
-| `presence_check_v2.py` | `presence_check_v2.service` | Polls the Omada OpenAPI client list and publishes retained boolean MQTT topics under `phone_presence/` for each tracked person plus `phone_presence/everyone` (logical AND). |
+| `yard_presence_night_off.py` | `yard_presence_night_off.service` | Between 21:00 and sunrise, when `phonePresence/everyone` has stayed true for 10 minutes and the arrival override is OFF, turns off outside lights. If Wyze/BackDoor turns back ON, the timer restarts. |
+| `presence_check_v2.py` | `presence_check_v2.service` | Polls the Omada OpenAPI client list and publishes retained boolean MQTT topics under `phonePresence/` for each tracked person plus `phonePresence/everyone` (logical AND). |
 | `omada_presence_automation.py` | `omada_presence_automation.service` | Checks the Omada controller client list and, when every expected phone is home, turns off the yard outlet 1 using the same MQTT command as the midnight automation. |
-| `late_arrival_override.py` | `late_arrival_override.service` | Historical script name retained. It hosts `late_arrival_override` and the Alexa-visible `kitchenSpectral` virtual dimmable light/manual-intervention marker. |
 
 ### Android Wi-Fi MAC setting for `Hornburg`
 
@@ -72,23 +73,24 @@ Android can use a randomized MAC address for each Wi-Fi network. To use the phon
 
 Menu names vary between Android versions and manufacturers. This setting is per Wi-Fi network; changing it for `Hornburg` does not disable randomized MAC addresses on other networks. Using the device MAC makes it consistently identifiable on this network, but also exposes that hardware address to the network.
 
-### Virtual devices hosted by `late_arrival_override.py`
+### Virtual devices in active use
 
-The script keeps its original filename and service name for compatibility, but it now hosts more than one virtual MQTT device:
+The current virtual devices are split into dedicated scripts:
 
-- `late_arrival_override`: existing override switch used by `yard_midnight_automation.py`.
-- `kitchenSpectral`: virtual dimmable light included in the Alexa kitchen group. Power and brightness commands emit a brief `manuallyTriggered` MQTT flag for kitchen automations.
+- `arrivalOverride`: override switch used by `yard_midnight_automation.py` and `yard_presence_night_off.py`.
+- `kitchenSpectre`: Alexa-visible kitchen dimmable light with manual-trigger markers for kitchen automations.
+- `backyardSpectre`: Alexa-visible backyard dimmable light with matching manual-trigger markers.
 
 Example Alexa routine behavior:
 
-Include `kitchenSpectral` alongside the physical lights in the Alexa kitchen group. Commands such as turning the group on/off or setting its brightness update the virtual dimmer and publish `ON` briefly to `stat/kitchenSpectral/manuallyTriggered`; the flag then clears automatically. `kitchen_dimming.py` consumes that flag to suppress algorithmic auto-brightening after Alexa intervention.
+Include `kitchenSpectre` alongside the physical lights in the Alexa kitchen group. Commands such as turning the group on/off or setting its brightness update the virtual dimmer and publish `ON` briefly to `stat/kitchenSpectre/manuallyTriggeredBrightness` or `stat/kitchenSpectre/manuallyTriggeredPower`; the flag then clears automatically. `kitchen_dimming.py` consumes that flag to suppress algorithmic auto-brightening after Alexa intervention.
 
-MQTT topics for `kitchenSpectral`:
+MQTT topics for `kitchenSpectre`:
 
-- Power command/state: `cmnd/kitchenSpectral/POWER` and `stat/kitchenSpectral/POWER`
-- Brightness commands: `cmnd/kitchenSpectral/BRIGHTNESS` and `cmnd/kitchenSpectral/BRIGHTNESS_WITH_ONOFF`
-- Current brightness: `stat/kitchenSpectral/BRIGHTNESS`
-- Manual-intervention flag: `stat/kitchenSpectral/manuallyTriggered`
+- Power command/state: `cmnd/kitchenSpectre/POWER` and `stat/kitchenSpectre/POWER`
+- Brightness commands: `cmnd/kitchenSpectre/brightness` and `cmnd/kitchenSpectre/brightnessWithOnOff`
+- Current brightness: `stat/kitchenSpectre/brightness`
+- Manual-intervention flags: `stat/kitchenSpectre/manuallyTriggeredPower`, `stat/kitchenSpectre/manuallyTriggeredBrightness`, `stat/kitchenSpectre/manuallyTriggeredColorTemp`
 
 ## Support scripts
 
