@@ -33,6 +33,7 @@ POWER_COMMAND_TOPICS = [
     "cmnd/wyzeParkingTree/POWER2",
 ]
 GARDEN_LIGHTS_SET_TOPIC = "zigbee2mqtt/GardenLights/set"
+GARDEN_PATH_SET_TOPIC = "zigbee2mqtt/gardenPath/set"
 BACKDOOR_LIGHT_SET_TOPIC = "zigbee2mqtt/BackDoor/set"
 
 # Logging setup matches the kitchen automation style.
@@ -86,6 +87,8 @@ def send_sunrise_off_command(client):
     garden_payload = json.dumps({"state": "OFF"})
     client.publish(GARDEN_LIGHTS_SET_TOPIC, garden_payload, retain=False)
     logging.info(f"Sent sunrise OFF command to {GARDEN_LIGHTS_SET_TOPIC}: {garden_payload}")
+    client.publish(GARDEN_PATH_SET_TOPIC, garden_payload, retain=False)
+    logging.info(f"Sent sunrise OFF command to {GARDEN_PATH_SET_TOPIC}: {garden_payload}")
 
     backdoor_payload = json.dumps({"state": "OFF"})
     client.publish(BACKDOOR_LIGHT_SET_TOPIC, backdoor_payload, retain=False)

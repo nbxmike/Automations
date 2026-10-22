@@ -35,6 +35,8 @@ DIMMER_SET_TOPIC = "girier01/11/set"
 DIMMER_STATE_TOPIC = "girier01/11/get"
 GARDEN_LIGHTS_SET_TOPIC = "zigbee2mqtt/GardenLights/set"
 GARDEN_LIGHTS_STATE_TOPIC = "zigbee2mqtt/GardenLights"
+GARDEN_PATH_SET_TOPIC = "zigbee2mqtt/gardenPath/set"
+GARDEN_PATH_STATE_TOPIC = "zigbee2mqtt/gardenPath"
 BACKDOOR_LIGHT_SET_TOPIC = "zigbee2mqtt/BackDoor/set"
 BACKDOOR_LIGHT_STATE_TOPIC = "zigbee2mqtt/BackDoor"
 POWER1_ON_TOPIC = "cmnd/wyzeParkingTree/POWER1"
@@ -44,6 +46,7 @@ DEVICE_STATE_TOPICS = (
     + [
         DIMMER_STATE_TOPIC,
         GARDEN_LIGHTS_STATE_TOPIC,
+        GARDEN_PATH_STATE_TOPIC,
         BACKDOOR_LIGHT_STATE_TOPIC,
         POWER1_STATE_TOPIC,
     ]
@@ -174,6 +177,15 @@ def send_early_morning_on_command(client):
         )
     else:
         logging.info(f"Leaving GardenLights already ON: {GARDEN_LIGHTS_STATE_TOPIC}")
+
+    if device_state.get(GARDEN_PATH_STATE_TOPIC) is not True:
+        garden_path_payload = json.dumps({"state": "ON"})
+        client.publish(GARDEN_PATH_SET_TOPIC, garden_path_payload, retain=False)
+        logging.info(
+            f"Sent early-morning ON command to {GARDEN_PATH_SET_TOPIC}: {garden_path_payload}"
+        )
+    else:
+        logging.info(f"Leaving gardenPath already ON: {GARDEN_PATH_STATE_TOPIC}")
 
     if device_state.get(BACKDOOR_LIGHT_STATE_TOPIC) is not True:
         backdoor_payload = json.dumps({"state": "ON", "brightness": 50})

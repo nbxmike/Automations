@@ -41,6 +41,8 @@ python_files=(
     "Spectres/arrivalOverride.py"
     "Spectres/kitchenSpecter.py"
     "Spectres/BackyardSpecter.py"
+    "Spectres/backGardenSpectre.py"
+    "Spectres/outdoorSpecter.py"
 )
 
 # Keep this list aligned with install/reinstall script exclusions.

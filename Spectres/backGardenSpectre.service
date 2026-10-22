@@ -1,0 +1,18 @@
+# Runs backGardenSpectre.py as a systemd service for the selected user,
+# assuming the script is installed at /home/pi/automations/Spectres/backGardenSpectre.py.
+[Unit]
+Description=Back garden spectral virtual MQTT device for pi
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/automations/Spectres
+ExecStart=/usr/bin/python3 /home/pi/automations/Spectres/backGardenSpectre.py
+Restart=on-failure
+RestartSec=5s
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

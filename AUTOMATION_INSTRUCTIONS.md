@@ -50,13 +50,13 @@ OMADA_PASSWORD = "your_omada_password"
 | Python script | Service file | What it does |
 |---|---|---|
 | `kitchen_morning.py` | `kitchen_morning.service` | When kitchen presence is detected between 05:00 and sunrise, and all lights are off, turns on the kitchen LED strips and the Girier dimmer. |
-| `kitchen_early_morning_on.py` | `kitchen_early_morning_on.service` | When presence is detected between 05:00 and sunrise, turns on the kitchen LED strips (warm white, 350 mireds, brightness 200), outlet 1 of the Wyze plug, and the BackDoor Zigbee light at 20% brightness. |
+| `kitchen_early_morning_on.py` | `kitchen_early_morning_on.service` | When presence is detected between 05:00 and sunrise, turns on the kitchen LED strips (warm white), outlet 1 of the Wyze plug, GardenLights, gardenPath, and the BackDoor Zigbee light at 20% brightness. |
 | `kitchen_dimming.py` | `kitchen_dimming.service` | Dims kitchen lights after 10 minutes of vacancy. If the service dimmed lights, it restores them to about 80% after 3 continuous minutes of occupancy between sunset and sunrise, unless Alexa manually intervenes. |
 | `kitchen_spectre_router.py` | `kitchen_spectre_router.service` | Listens for `kitchenSpectre` virtual-device set commands and forwards equivalent power/brightness/color-temp commands to the physical kitchen strips and dimmer topics used by `kitchen_dimming.py`. |
-| `backyard_spectre_router.py` | `backyard_spectre_router.service` | Listens for `backyardGhost` virtual-device set commands and forwards ON/brightness/color-temp commands to the Wyze outdoor plug, GardenLights, and BackDoor. OFF only applies to `wyzeParkingTree/POWER1`. |
-| `yard_sunset_automation.py` | `yard_sunset_automation.service` | Turns on both outlets of the Tasmota Wyze Plug Outdoor at sunset and turns on the BackDoor Zigbee light at 20% brightness. |
+| `backyard_spectre_router.py` | `backyard_spectre_router.service` | Listens for `backyardGhost` virtual-device set commands and forwards ON/brightness/color-temp commands to the Wyze outdoor plug, GardenLights, gardenPath, and BackDoor. OFF only applies to `wyzeParkingTree/POWER1`. |
+| `yard_sunset_automation.py` | `yard_sunset_automation.service` | Turns on both outlets of the Tasmota Wyze Plug Outdoor at sunset and turns on GardenLights, gardenPath, and the BackDoor Zigbee light at 20% brightness. |
 | `yard_midnight_automation.py` | `yard_midnight_automation.service` | Turns off outlet 1 of the Wyze plug and turns off the BackDoor Zigbee light at midnight, unless the late-arrival override is ON. An override older than 6 hours is treated as stale and ignored. |
-| `yard_sunrise_automation.py` | `yard_sunrise_automation.service` | Turns off both outlets of the Wyze plug at sunrise and turns off the BackDoor Zigbee light. |
+| `yard_sunrise_automation.py` | `yard_sunrise_automation.service` | Turns off both outlets of the Wyze plug at sunrise and turns off GardenLights, gardenPath, and the BackDoor Zigbee light. |
 | `yard_presence_night_off.py` | `yard_presence_night_off.service` | Between 21:00 and sunrise, when `phonePresence/everyone` has stayed true for 10 minutes and the arrival override is OFF, turns off outside lights. If Wyze/BackDoor turns back ON, the timer restarts. |
 | `presence_check_v2.py` | `presence_check_v2.service` | Polls the Omada OpenAPI client list and publishes retained boolean MQTT topics under `phonePresence/` for each tracked person plus `phonePresence/everyone` (logical AND). |
 | `omada_presence_automation.py` | `omada_presence_automation.service` | Checks the Omada controller client list and, when every expected phone is home, turns off the yard outlet 1 using the same MQTT command as the midnight automation. |
@@ -80,6 +80,7 @@ The current virtual devices are split into dedicated scripts:
 - `arrivalOverride`: override switch used by `yard_midnight_automation.py` and `yard_presence_night_off.py`.
 - `kitchenSpectre`: Alexa-visible kitchen dimmable light with manual-trigger markers for kitchen automations.
 - `backyardGhost`: Alexa-visible backyard dimmable light with matching manual-trigger markers.
+- `outdoorGhost`: Alexa-visible outdoor dimmable light with the same topic/discovery and manual-trigger behavior pattern as `backyardGhost`.
 
 Example Alexa routine behavior:
 

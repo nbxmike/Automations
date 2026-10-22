@@ -17,6 +17,7 @@ POWER_COMMAND_TOPICS = [
     "cmnd/wyzeParkingTree/POWER2",
 ]
 GARDEN_LIGHTS_SET_TOPIC = "zigbee2mqtt/GardenLights/set"
+GARDEN_PATH_SET_TOPIC = "zigbee2mqtt/gardenPath/set"
 BACKDOOR_LIGHT_SET_TOPIC = "zigbee2mqtt/BackDoor/set"
 BRIGHTNESS_MIN = 1
 BRIGHTNESS_MAX = 254
@@ -140,10 +141,19 @@ def _publish_to_physical_devices(
         if color_temp is not None:
             light_payload["color_temp"] = color_temp
 
+        serialized = json.dumps(light_payload)
         for topic in (GARDEN_LIGHTS_SET_TOPIC, BACKDOOR_LIGHT_SET_TOPIC):
-            serialized = json.dumps(light_payload)
             client.publish(topic, serialized)
             logging.info("Forwarded %s -> %s payload=%s", source_topic, topic, serialized)
+
+        garden_path_payload = json.dumps({"state": "ON"})
+        client.publish(GARDEN_PATH_SET_TOPIC, garden_path_payload)
+        logging.info(
+            "Forwarded %s -> %s payload=%s",
+            source_topic,
+            GARDEN_PATH_SET_TOPIC,
+            garden_path_payload,
+        )
 
 
 def _handle_ha_set_json(client, topic: str, payload: str):
