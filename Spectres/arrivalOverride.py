@@ -56,11 +56,11 @@ def _publish_state(client):
 def _publish_discovery(client):
     discovery_payload = {
         "name": DEVICE_NAME,
-        "unique_id": "virtual_arrival_override_01",
+        "unique_id": f"virtual_{DEVICE_NAME}_01",
         "command_topic": HA_COMMAND_TOPIC,
         "state_topic": HA_STATE_TOPIC,
         "device": {
-            "identifiers": ["arrivalOverride_id"],
+            "identifiers": [f"{DEVICE_NAME}_id"],
             "name": DEVICE_NAME,
             "model": "LTW001",
             "manufacturer": "Custom",
@@ -143,7 +143,7 @@ def main():
     signal.signal(signal.SIGINT, handle_shutdown)
 
     hostname = socket.gethostname()
-    client_id = f"{hostname}_{DEVICE_NAME}_arrivalOverride"
+    client_id = f"{hostname}_{DEVICE_NAME}"
     logging.info("Using MQTT client_id: %s", client_id)
 
     client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2, client_id=client_id)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Routes virtual kitchenSpectre commands to physical kitchen light controllers.
+# Routes virtual kitchenGhostly commands to physical kitchen light controllers.
 import asyncio
 import json
 import logging
@@ -10,7 +10,7 @@ from automation_credentials import MQTT_BROKER, MQTT_PORT, MQTT_PASS, MQTT_USER
 from paho.mqtt import client as mqtt_client
 
 # --- Configuration ---
-KITCHEN_VIRTUAL_NAMES = ("kitchenSpectre",)
+KITCHEN_VIRTUAL_NAMES = ("kitchenGhostly",)
 STRIP_TOPICS = [
     "zigbee2mqtt/Fridge LED Strip/set",
     "zigbee2mqtt/Sink LED Strip/set",

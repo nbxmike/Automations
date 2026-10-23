@@ -31,8 +31,7 @@ DIMMER_SET_TOPIC = "girier01/11/set"
 
 # Virtual kitchen-device observation topics.
 KITCHEN_VIRTUAL_DEVICE_NAMES = (
-    "kitchenSpectral",
-    "kitchenSpectre",
+    "kitchenGhostly",
 )
 KITCHEN_POWER_STATE_TOPICS = {
     f"stat/{device_name}/POWER" for device_name in KITCHEN_VIRTUAL_DEVICE_NAMES

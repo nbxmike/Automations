@@ -4,7 +4,7 @@
 #
 # Conditions required before shutdown:
 # - Local time is between 21:00 and sunrise.
-# - lateArrivalOverride is not ON.
+# - arrivalOverride is not ON.
 # - phonePresence/everyone is true for 10 continuous minutes.
 #
 # After shutdown, if wyzeParkingTree and/or BackDoor is turned back ON while
@@ -40,11 +40,9 @@ POWER2_STATE_TOPIC = "stat/wyzeParkingTree/POWER2"
 BACKDOOR_STATE_TOPIC = "zigbee2mqtt/BackDoor"
 
 OVERRIDE_POWER_TOPICS = (
-    "stat/lateArrivalOverride/POWER",
     "stat/arrivalOverride/POWER",
 )
 OVERRIDE_STATE_TOPICS = (
-    "stat/lateArrivalOverride/STATE",
     "stat/arrivalOverride/STATE",
 )
 PHONE_EVERYONE_TOPIC = "phonePresence/everyone"

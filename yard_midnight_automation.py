@@ -33,11 +33,9 @@ LONGITUDE: Optional[float] = -70.68931574583688
 POWER1_OFF_TOPIC = "cmnd/wyzeParkingTree/POWER1"
 BACKDOOR_LIGHT_SET_TOPIC = "zigbee2mqtt/BackDoor/set"
 OVERRIDE_POWER_TOPICS = (
-    "stat/lateArrivalOverride/POWER",
     "stat/arrivalOverride/POWER",
 )
 OVERRIDE_STATE_TOPICS = (
-    "stat/lateArrivalOverride/STATE",
     "stat/arrivalOverride/STATE",
 )
 

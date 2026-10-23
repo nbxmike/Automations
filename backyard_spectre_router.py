@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Routes backyardGhost virtual commands to the yard devices.
+# Routes backyardGhostly virtual commands to the yard devices.
 import json
 import logging
 import socket
@@ -9,7 +9,7 @@ from automation_credentials import MQTT_BROKER, MQTT_PORT, MQTT_PASS, MQTT_USER
 from paho.mqtt import client as mqtt_client
 
 # --- Configuration ---
-BACKYARD_VIRTUAL_NAMES = ("backyardGhost",)
+BACKYARD_VIRTUAL_NAMES = ("backyardGhostly",)
 POWER1_OFF_TOPIC = "cmnd/wyzeParkingTree/POWER1"
 POWER2_ON_TOPIC = "cmnd/wyzeParkingTree/POWER2"
 POWER_COMMAND_TOPICS = [
@@ -92,7 +92,7 @@ def _publish_lights_payload(client, topic: str, *, state: Optional[bool] = None,
     # Garden lights and BackDoor are not switched off here by the virtual device OFF action.
     if state is False:
         client.publish(POWER1_OFF_TOPIC, "OFF")
-        logging.info("Forwarded %s -> %s payload=%s", "backyardGhost off", POWER1_OFF_TOPIC, "OFF")
+        logging.info("Forwarded %s -> %s payload=%s", "backyardGhostly off", POWER1_OFF_TOPIC, "OFF")
         return
 
     if state is not None:
@@ -113,7 +113,7 @@ def _publish_lights_payload(client, topic: str, *, state: Optional[bool] = None,
 
     serialized = json.dumps(payload)
     client.publish(topic, serialized)
-    logging.info("Forwarded %s -> %s payload=%s", "backyardGhost", topic, serialized)
+    logging.info("Forwarded %s -> %s payload=%s", "backyardGhostly", topic, serialized)
 
 
 def _publish_to_physical_devices(
@@ -208,7 +208,7 @@ def _handle_ha_set_json(client, topic: str, payload: str):
 
 
 def route_backyard_spectre_command(client, topic: str, payload: str):
-    """Route a backyardGhost command to the real yard devices."""
+    """Route a backyardGhostly command to the real yard devices."""
     kind = TOPIC_TO_KIND.get(topic)
     if kind is None:
         return
@@ -264,7 +264,7 @@ def on_message(client, userdata, msg):
 
 def on_connect(client, userdata, flags, rc, properties=None):
     if rc == 0:
-        logging.info("Connected to MQTT broker for backyardGhost router.")
+        logging.info("Connected to MQTT broker for backyardGhostly router.")
         for topic in sorted(TOPIC_TO_KIND):
             client.subscribe(topic)
             logging.info("Subscribed to %s", topic)

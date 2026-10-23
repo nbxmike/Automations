@@ -24,8 +24,7 @@ STRIP_STATE_TOPICS = [
 DIMMER_SET_TOPIC = "girier01/11/set"
 DIMMER_STATE_TOPIC = "girier01/11/get"
 KITCHEN_VIRTUAL_DEVICE_NAMES = (
-    "kitchenSpectral",
-    "kitchenSpectre",
+    "kitchenGhostly",
 )
 MANUAL_POWER_TRIGGER_STATE_TOPICS = {
     f"stat/{device_name}/manuallyTriggeredPower"

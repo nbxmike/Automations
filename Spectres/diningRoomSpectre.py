@@ -15,7 +15,7 @@ if str(ROOT_DIR) not in sys.path:
 from automation_credentials import MQTT_BROKER, MQTT_PASS, MQTT_PORT, MQTT_USER
 from paho.mqtt import client as mqtt_client
 
-DEVICE_NAME = "diningRoomGhost"
+DEVICE_NAME = "diningRoomGhostly"
 HA_COMMAND_TOPIC = f"lights/{DEVICE_NAME}/set"
 HA_STATE_TOPIC = f"lights/{DEVICE_NAME}/state"
 HA_DISCOVERY_TOPIC = f"homeassistant/light/{DEVICE_NAME}/light/config"
@@ -83,7 +83,7 @@ def _publish_state(client):
 def _publish_discovery(client):
     discovery_payload = {
         "name": DEVICE_NAME,
-        "unique_id": "virtual_dining_room_spectre_01",
+        "unique_id": f"virtual_{DEVICE_NAME}_01",
         "command_topic": HA_COMMAND_TOPIC,
         "state_topic": HA_STATE_TOPIC,
         "brightness": True,
@@ -91,7 +91,7 @@ def _publish_discovery(client):
         "min_mireds": COLOR_TEMP_MIN,
         "max_mireds": COLOR_TEMP_MAX,
         "device": {
-            "identifiers": ["diningRoomGhost_id"],
+            "identifiers": [f"{DEVICE_NAME}_id"],
             "name": DEVICE_NAME,
             "model": "LTW001",
             "manufacturer": "Custom",
@@ -279,7 +279,7 @@ def main():
     signal.signal(signal.SIGINT, handle_shutdown)
 
     hostname = socket.gethostname()
-    client_id = f"{hostname}_{DEVICE_NAME}_diningRoomGhost"
+    client_id = f"{hostname}_{DEVICE_NAME}"
     logging.info("Using MQTT client_id: %s", client_id)
 
     client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2, client_id=client_id)
