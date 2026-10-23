@@ -32,7 +32,7 @@ fi
 # Remove CRLF endings before validation and installation because Windows edits
 # can break systemd unit files and Python scripts on the Pi.
 shopt -s nullglob
-for file in /home/pi/automations/*.service /home/pi/automations/*.py /home/pi/automations/*.sh /home/pi/automations/Spectres/*.service /home/pi/automations/Spectres/*.py /home/pi/automations/Spectres/*.sh; do
+for file in /home/pi/automations/*.service /home/pi/automations/*.py /home/pi/automations/*.sh /home/pi/automations/Spectres/*.service /home/pi/automations/Spectres/*.py /home/pi/automations/Spectres/*.sh /home/pi/automations/Routers/*.service /home/pi/automations/Routers/*.py /home/pi/automations/Routers/*.sh; do
     [ -e "$file" ] || continue
     sed -i 's/\r$//' "$file"
 done

@@ -1,5 +1,5 @@
 # Runs backyard_spectre_router.py as a systemd service for the selected user,
-# assuming the script is installed at /home/pi/automations/backyard_spectre_router.py.
+# assuming the script is installed at /home/pi/automations/Routers/backyard_spectre_router.py.
 [Unit]
 Description=Backyard spectre MQTT command router for pi
 Wants=network-online.target
@@ -9,10 +9,11 @@ After=network-online.target
 Type=simple
 User=pi
 WorkingDirectory=/home/pi/automations
-ExecStart=/usr/bin/python3 /home/pi/automations/backyard_spectre_router.py
+ExecStart=/usr/bin/python3 /home/pi/automations/Routers/backyard_spectre_router.py
 Restart=on-failure
 RestartSec=5s
 Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=/home/pi/automations
 
 [Install]
 WantedBy=multi-user.target
