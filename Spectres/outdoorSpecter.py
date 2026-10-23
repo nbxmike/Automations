@@ -76,13 +76,7 @@ def _publish_state(client):
     client.publish(f"stat/{DEVICE_NAME}/colorTemp", str(device_color_temp), retain=True)
 
     client.publish(HA_STATE_TOPIC, json.dumps(state), retain=True)
-    logging.info(
-        "Published %s state=%s brightness=%s color_temp=%s",
-        DEVICE_NAME,
-        state_value,
-        device_brightness,
-        device_color_temp,
-    )
+    logging.info("Published %s state=%s brightness=%s color_temp=%s", DEVICE_NAME, state_value, device_brightness, device_color_temp)
     return state
 
 
@@ -179,9 +173,7 @@ def _handle_json_command(client, payload):
     if "state" in data:
         state_value = _normalize_bool(data["state"])
         if state_value is None:
-            logging.warning(
-                "Ignored invalid %s state in JSON command: %r", DEVICE_NAME, data["state"]
-            )
+            logging.warning("Ignored invalid %s state in JSON command: %r", DEVICE_NAME, data["state"])
             return
         device_state = state_value
         _signal_manual_trigger(client, POWER_MANUAL_TOPIC)
@@ -189,15 +181,9 @@ def _handle_json_command(client, payload):
 
     if "brightness" in data:
         try:
-            device_brightness = max(
-                BRIGHTNESS_MIN, min(BRIGHTNESS_MAX, int(float(data["brightness"])))
-            )
+            device_brightness = max(BRIGHTNESS_MIN, min(BRIGHTNESS_MAX, int(float(data["brightness"]))))
         except (TypeError, ValueError):
-            logging.warning(
-                "Ignored invalid %s brightness in JSON command: %r",
-                DEVICE_NAME,
-                data["brightness"],
-            )
+            logging.warning("Ignored invalid %s brightness in JSON command: %r", DEVICE_NAME, data["brightness"])
             return
         _signal_manual_trigger(client, BRIGHTNESS_MANUAL_TOPIC)
         state_updated = True
@@ -210,23 +196,15 @@ def _handle_json_command(client, payload):
 
     if color_temp_input is not None:
         try:
-            device_color_temp = max(
-                COLOR_TEMP_MIN, min(COLOR_TEMP_MAX, int(float(color_temp_input)))
-            )
+            device_color_temp = max(COLOR_TEMP_MIN, min(COLOR_TEMP_MAX, int(float(color_temp_input))))
         except (TypeError, ValueError):
-            logging.warning(
-                "Ignored invalid %s color_temp in JSON command: %r",
-                DEVICE_NAME,
-                color_temp_input,
-            )
+            logging.warning("Ignored invalid %s color_temp in JSON command: %r", DEVICE_NAME, color_temp_input)
             return
         _signal_manual_trigger(client, COLOR_TEMP_MANUAL_TOPIC)
         state_updated = True
 
     if not state_updated:
-        logging.warning(
-            "Ignored %s JSON command with no supported fields: %r", DEVICE_NAME, payload
-        )
+        logging.warning("Ignored %s JSON command with no supported fields: %r", DEVICE_NAME, payload)
         return
 
     _publish_state(client)
@@ -286,9 +264,7 @@ def on_connect(client, userdata, flags, rc, properties=None):
 
 def on_disconnect(client, userdata, flags, rc, properties=None):
     if rc != 0:
-        logging.warning(
-            "Unexpected MQTT disconnect for %s (rc=%s). Reconnecting...", DEVICE_NAME, rc
-        )
+        logging.warning("Unexpected MQTT disconnect for %s (rc=%s). Reconnecting...", DEVICE_NAME, rc)
     else:
         logging.info("Disconnected from MQTT broker for %s.", DEVICE_NAME)
 
