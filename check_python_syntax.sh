@@ -28,20 +28,24 @@ done
 cd "$SCRIPT_DIR" || exit 1
 
 python_files=(
+    "backyard_spectre_router.py"
     "default_color_temp.py"
     "kitchen_dimming.py"
-    "kitchen_spectre_router.py"
-    "backyard_spectre_router.py"
     "kitchen_early_morning_on.py"
+    "kitchen_spectre_router.py"
     "presence_check_v2.py"
-    "yard_presence_night_off.py"
-    "yard_sunset_automation.py"
-    "yard_sunrise_automation.py"
     "yard_midnight_automation.py"
+    "yard_presence_night_off.py"
+    "yard_sunrise_automation.py"
+    "yard_sunset_automation.py"
     "Spectres/arrivalOverride.py"
-    "Spectres/kitchenSpecter.py"
-    "Spectres/BackyardSpecter.py"
     "Spectres/backGardenSpectre.py"
+    "Spectres/BackyardSpecter.py"
+    "Spectres/basementSpectre.py"
+    "Spectres/diningRoomSpectre.py"
+    "Spectres/kitchenSpecter.py"
+    "Spectres/livingRoomSpectre.py"
+    "Spectres/masterBedroomSpecter.py"
     "Spectres/outdoorSpecter.py"
 )
 

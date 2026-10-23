@@ -80,6 +80,8 @@ The current virtual devices are split into dedicated scripts:
 - `arrivalOverride`: override switch used by `yard_midnight_automation.py` and `yard_presence_night_off.py`.
 - `kitchenSpectre`: Alexa-visible kitchen dimmable light with manual-trigger markers for kitchen automations.
 - `backyardGhost`: Alexa-visible backyard dimmable light with matching manual-trigger markers.
+- `basementGhost`: Alexa-visible basement dimmable light with the same topic/discovery and manual-trigger behavior pattern as `backyardGhost`.
+- `livingRoomGhost`: Alexa-visible living-room dimmable light with the same topic/discovery and manual-trigger behavior pattern as `backyardGhost`.
 - `outdoorGhost`: Alexa-visible outdoor dimmable light with the same topic/discovery and manual-trigger behavior pattern as `backyardGhost`.
 
 Example Alexa routine behavior:
