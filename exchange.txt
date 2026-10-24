@@ -1,0 +1,5 @@
+journalctl -f -o short-iso \
+  -u kitchenSpecter.service \
+  -u kitchen_spectre_router.service \
+  -u default_color_temp.service \
+  -u kitchen_dimming.service
