@@ -119,7 +119,7 @@ def positive_number(value: str) -> float:
 
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--server", default="http://172.24.32.102", help="diyHue base URL or IP")
+    parser.add_argument("--server", default="http://172.24.34.112", help="diyHue base URL or IP")
     parser.add_argument("--interval", type=positive_number, default=5.0, help="poll interval in seconds (default: 5)")
     parser.add_argument("--timeout", type=positive_number, default=10.0, help="request timeout in seconds (default: 10)")
     parser.add_argument("--output", type=Path, default=Path(__file__).with_name("diyhue_devices.txt"))

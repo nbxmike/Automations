@@ -53,7 +53,7 @@ def save_api_key(api_key: str, path: Path = CREDENTIALS_PATH) -> None:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--server", default="http://172.24.32.102", help="diyHue base URL or IP")
+    parser.add_argument("--server", default="http://172.24.34.112", help="diyHue base URL or IP")
     parser.add_argument("--timeout", type=positive_number, default=10.0, help="request timeout in seconds")
     parser.add_argument("--insecure", action="store_true", help="disable HTTPS certificate verification (trusted LAN only)")
     args = parser.parse_args(argv)

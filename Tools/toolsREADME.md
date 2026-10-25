@@ -27,7 +27,7 @@ If your terminal is already in the Tools directory, replace
 
 ### Server Address And Connection
 
-The default server address is `http://172.24.32.102`. No script changes are
+The default server address is `http://172.24.34.112`. No script changes are
 needed to use a different IP address: pass `--server` when running the tool.
 For example, to use `172.24.32.110`:
 
@@ -65,13 +65,13 @@ rather than duplicated. A missing credentials file is created.
 3. While linking is enabled, run:
 
 ```powershell
-python Tools/diyhue_register.py --server http://172.24.32.102
+python Tools/diyhue_register.py --server http://172.24.34.112
 ```
 
 On Linux/Raspberry Pi:
 
 ```sh
-python3 Tools/diyhue_register.py --server http://172.24.32.102
+python3 Tools/diyhue_register.py --server http://172.24.34.112
 ```
 
 Successful registration confirms the save without displaying the key. Keep the
@@ -100,15 +100,15 @@ After saving a key, run the monitor from any terminal without exporting it.
 Windows PowerShell:
 
 ```powershell
-python Tools/diyhue_monitor.py --server http://172.24.32.102 --once
-python Tools/diyhue_monitor.py --server http://172.24.32.102
+python Tools/diyhue_monitor.py --server http://172.24.34.112 --once
+python Tools/diyhue_monitor.py --server http://172.24.34.112
 ```
 
 Linux/Raspberry Pi:
 
 ```sh
-python3 Tools/diyhue_monitor.py --server http://172.24.32.102 --once
-python3 Tools/diyhue_monitor.py --server http://172.24.32.102
+python3 Tools/diyhue_monitor.py --server http://172.24.34.112 --once
+python3 Tools/diyhue_monitor.py --server http://172.24.34.112
 ```
 
 The first invocation checks the connection and writes one inventory before
