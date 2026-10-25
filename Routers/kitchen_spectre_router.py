@@ -16,7 +16,7 @@ STRIP_TOPICS = [
     "zigbee2mqtt/Sink LED Strip/set",
 ]
 DIMMER_SET_TOPIC = "girier01/11/set"
-TRANSITION_SECONDS = 3
+TRANSITION_SECONDS = 0
 BRIGHTNESS_MIN = 1
 BRIGHTNESS_MAX = 254
 COLOR_TEMP_MIN = 153
@@ -43,7 +43,7 @@ MQTT_CLIENT_ID_SUFFIX = "2f5b6a97"
 def generate_client_id():
     """Build a descriptive, stable MQTT client ID for this host and script."""
     hostname = socket.gethostname()
-    fixed_label = "KitchenSpectreRouter"
+    fixed_label = "KitchenGhostlyRouter"
     return f"{hostname}_{fixed_label}_{MQTT_CLIENT_ID_SUFFIX}"
 
 

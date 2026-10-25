@@ -10,7 +10,7 @@ I do not think that anyone will want to use my automations as is.  I am publishi
 
 ## What It Does
 
-- **Kitchen lighting:** turns lights on during the early morning, dims them after the room is vacant, and can restore brightness after occupancy returns. Virtual MQTT kitchen devices let Alexa interactions suppress automatic brightening, and a router service can mirror virtual `kitchenSpectre` set commands to the physical kitchen lights.
+- **Kitchen lighting:** turns lights on during the early morning, dims them after the room is vacant, and can restore brightness after occupancy returns. The `kitchenGhostly` virtual MQTT light lets Alexa interactions suppress automatic brightening, and a router service mirrors its commands to the physical kitchen lights.
 - **Outdoor lighting and outlets:** controls the outdoor plug and back-door light around sunset, midnight, and sunrise, with a late-arrival override.
 - **Phone presence:** polls the Omada controller for configured phones and publishes retained per-person and household presence topics over MQTT. Other automations can use that state to control outdoor devices.
 

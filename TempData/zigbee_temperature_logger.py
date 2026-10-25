@@ -48,8 +48,9 @@ TOPIC_PREFIX = "zigbee2mqtt"
 # The example names listed in the request are included below. If you have a second
 # th_dot list, add it to EXTRA_SENSOR_NAMES and it will be merged automatically.
 SENSOR_NAMES = [
-    *[f"th_disp{i}" for i in range(1, 9)],
-    *[f"th_dot{i}" for i in range(1, 9)],
+    *[f"th_disp{i}" for i in range(1, 21)],
+    *[f"th_dot{i}" for i in range(1, 21)],
+    *[f"th_stick{i}" for i in range(1, 21)],
 ]
 EXTRA_SENSOR_NAMES = []
 TARGET_SENSORS = list(dict.fromkeys(SENSOR_NAMES + EXTRA_SENSOR_NAMES))

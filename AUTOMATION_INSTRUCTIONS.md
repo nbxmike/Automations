@@ -52,7 +52,7 @@ OMADA_PASSWORD = "your_omada_password"
 | `kitchen_morning.py` | `kitchen_morning.service` | When kitchen presence is detected between 05:00 and sunrise, and all lights are off, turns on the kitchen LED strips and the Girier dimmer. |
 | `kitchen_early_morning_on.py` | `kitchen_early_morning_on.service` | When presence is detected between 05:00 and sunrise, turns on the kitchen LED strips (warm white), outlet 1 of the Wyze plug, GardenLights, gardenPath, and the BackDoor Zigbee light at 20% brightness. |
 | `kitchen_dimming.py` | `kitchen_dimming.service` | Dims kitchen lights after 10 minutes of vacancy. If the service dimmed lights, it restores them to about 80% after 3 continuous minutes of occupancy between sunset and sunrise, unless Alexa manually intervenes. |
-| `kitchen_spectre_router.py` | `kitchen_spectre_router.service` | Listens for `kitchenSpectre` virtual-device set commands and forwards equivalent power/brightness/color-temp commands to the physical kitchen strips and dimmer topics used by `kitchen_dimming.py`. |
+| `kitchen_spectre_router.py` | `kitchen_spectre_router.service` | Listens for `kitchenGhostly` virtual-device set commands and forwards equivalent power/brightness/color-temp commands to the physical kitchen strips and dimmer topics used by `kitchen_dimming.py`. |
 | `backyard_spectre_router.py` | `backyard_spectre_router.service` | Listens for `backyardGhost` virtual-device set commands and forwards ON/brightness/color-temp commands to the Wyze outdoor plug, GardenLights, gardenPath, and BackDoor. OFF only applies to `wyzeParkingTree/POWER1`. |
 | `basement_spectre_router.py` | `basement_spectre_router.service` | Listens for `basementGhostly` virtual-device commands and forwards state, brightness, and color temperature to the `Basement_Oil_Tank_Light` Zigbee2MQTT light. |
 | `yard_sunset_automation.py` | `yard_sunset_automation.service` | Turns on both outlets of the Tasmota Wyze Plug Outdoor at sunset and turns on GardenLights, gardenPath, and the BackDoor Zigbee light at 20% brightness. |
@@ -79,7 +79,7 @@ Menu names vary between Android versions and manufacturers. This setting is per 
 The current virtual devices are split into dedicated scripts:
 
 - `arrivalOverride`: override switch used by `yard_midnight_automation.py` and `yard_presence_night_off.py`.
-- `kitchenSpectre`: Alexa-visible kitchen dimmable light with manual-trigger markers for kitchen automations.
+- `kitchenGhostly`: Alexa-visible kitchen dimmable light with manual-trigger markers for kitchen automations.
 - `backyardGhost`: Alexa-visible backyard dimmable light with matching manual-trigger markers.
 - `basementGhost`: Alexa-visible basement dimmable light with the same topic/discovery and manual-trigger behavior pattern as `backyardGhost`.
 - `livingRoomGhost`: Alexa-visible living-room dimmable light with the same topic/discovery and manual-trigger behavior pattern as `backyardGhost`.
@@ -87,14 +87,14 @@ The current virtual devices are split into dedicated scripts:
 
 Example Alexa routine behavior:
 
-Include `kitchenSpectre` alongside the physical lights in the Alexa kitchen group. Commands such as turning the group on/off or setting its brightness update the virtual dimmer and publish `ON` briefly to `stat/kitchenSpectre/manuallyTriggeredBrightness` or `stat/kitchenSpectre/manuallyTriggeredPower`; the flag then clears automatically. `kitchen_dimming.py` consumes that flag to suppress algorithmic auto-brightening after Alexa intervention.
+Use `kitchenGhostly` as the Alexa kitchen light. Commands such as turning it on/off or setting its brightness update the virtual dimmer and publish `ON` briefly to `stat/kitchenGhostly/manuallyTriggeredBrightness` or `stat/kitchenGhostly/manuallyTriggeredPower`; the flag then clears automatically. `kitchen_dimming.py` consumes that flag to suppress algorithmic auto-brightening after Alexa intervention.
 
-MQTT topics for `kitchenSpectre`:
+MQTT topics for `kitchenGhostly`:
 
-- Power command/state: `cmnd/kitchenSpectre/POWER` and `stat/kitchenSpectre/POWER`
-- Brightness commands: `cmnd/kitchenSpectre/brightness` and `cmnd/kitchenSpectre/brightnessWithOnOff`
-- Current brightness: `stat/kitchenSpectre/brightness`
-- Manual-intervention flags: `stat/kitchenSpectre/manuallyTriggeredPower`, `stat/kitchenSpectre/manuallyTriggeredBrightness`, `stat/kitchenSpectre/manuallyTriggeredColorTemp`
+- Power command/state: `cmnd/kitchenGhostly/POWER` and `stat/kitchenGhostly/POWER`
+- Brightness commands: `cmnd/kitchenGhostly/brightness` and `cmnd/kitchenGhostly/brightnessWithOnOff`
+- Current brightness: `stat/kitchenGhostly/brightness`
+- Manual-intervention flags: `stat/kitchenGhostly/manuallyTriggeredPower`, `stat/kitchenGhostly/manuallyTriggeredBrightness`, `stat/kitchenGhostly/manuallyTriggeredColorTemp`
 
 ## Support scripts
 
