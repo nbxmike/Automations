@@ -292,16 +292,13 @@ def main():
 
     logging.info("Connecting to MQTT broker at %s...", MQTT_BROKER)
     client.connect(MQTT_BROKER, MQTT_PORT)
-    client.loop_start()
     logging.info("Backyard spectre MQTT router running. Press Ctrl+C to exit.")
 
     try:
-        while True:
-            pass
+        client.loop_forever()
     except KeyboardInterrupt:
         logging.info("Shutting down backyard spectre router...")
     finally:
-        client.loop_stop()
         client.disconnect()
 
 

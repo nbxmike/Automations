@@ -155,18 +155,15 @@ def main():
 
     logging.info("Connecting to MQTT broker at %s...", MQTT_BROKER)
     client.connect(MQTT_BROKER, MQTT_PORT)
-    client.loop_start()
     logging.info("Virtual device service running for %s.", DEVICE_NAME)
 
     try:
-        while True:
-            pass
+        client.loop_forever()
     except SystemExit:
         pass
     except KeyboardInterrupt:
         logging.info("Shutting down %s...", DEVICE_NAME)
     finally:
-        client.loop_stop()
         client.disconnect()
 
 
