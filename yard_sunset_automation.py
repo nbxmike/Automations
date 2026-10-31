@@ -7,9 +7,13 @@
 import asyncio
 import json
 import logging
+import math
 import socket
+import time
 from datetime import datetime
 from typing import Optional
+from urllib.parse import urlencode
+from urllib.request import urlopen
 
 from automation_credentials import MQTT_BROKER, MQTT_PORT, MQTT_PASS, MQTT_USER
 from paho.mqtt import client as mqtt_client
@@ -27,6 +31,12 @@ except ImportError:
 # Example: LATITUDE = 51.4778, LONGITUDE = 0.0
 LATITUDE: Optional[float] = 42.61281053611971
 LONGITUDE: Optional[float] = -70.68931574583688
+
+TEMPERATURE_THRESHOLD_F = 60.0
+BACKDOOR_COOL_BRIGHTNESS = 127
+BACKDOOR_WARM_BRIGHTNESS = 64
+WEATHER_TIMEOUT_SECONDS = 10
+WEATHER_MAX_AGE_SECONDS = 3600
 
 # Tasmota dual-outlet Wyze Plug Outdoor command/state topics.
 # MQTT Full Topic in the device info screen is "cmnd/wyzeParkingTree/",
@@ -86,6 +96,41 @@ def _get_sunset_time():
     return sun(observer, date=now.date(), tzinfo=now.tzinfo)["sunset"]
 
 
+def _get_outdoor_temperature_f():
+    """Return approximate current air temperature from Open-Meteo, or None."""
+    if LATITUDE is None or LONGITUDE is None:
+        logging.warning("No weather coordinates configured; using BackDoor 25%% brightness.")
+        return None
+    query = urlencode({
+        "latitude": LATITUDE,
+        "longitude": LONGITUDE,
+        "current": "temperature_2m",
+        "temperature_unit": "fahrenheit",
+        "timeformat": "unixtime",
+    })
+    try:
+        with urlopen(
+            "https://api.open-meteo.com/v1/forecast?" + query,
+            timeout=WEATHER_TIMEOUT_SECONDS,
+        ) as response:
+            data = json.load(response)
+        temperature = data["current"]["temperature_2m"]
+        measured_at = data["current"]["time"]
+        if data["current_units"]["temperature_2m"] != "\u00b0F":
+            raise ValueError("weather response is not in Fahrenheit")
+        for value in (temperature, measured_at):
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
+                raise ValueError("invalid weather temperature or timestamp")
+        age = time.time() - measured_at
+        if age < -300 or age > WEATHER_MAX_AGE_SECONDS:
+            raise ValueError("weather reading is stale or in the future")
+        logging.info("Open-Meteo outdoor temperature: %.1f F", temperature)
+        return temperature
+    except (OSError, ValueError, KeyError, TypeError, OverflowError) as exc:
+        logging.warning("Outdoor temperature unavailable (%s); using BackDoor 25%% brightness.", exc)
+        return None
+
+
 def send_sunset_on_command(client):
     """Send ON commands to both Wyze relays and selected Zigbee lights."""
     for topic in POWER_COMMAND_TOPICS:
@@ -98,7 +143,14 @@ def send_sunset_on_command(client):
     client.publish(GARDEN_PATH_SET_TOPIC, garden_payload, retain=False)
     logging.info(f"Sent sunset ON command to {GARDEN_PATH_SET_TOPIC}: {garden_payload}")
 
-    backdoor_payload = json.dumps({"state": "ON", "brightness": 64})
+    temperature = _get_outdoor_temperature_f()
+    brightness = (
+        BACKDOOR_COOL_BRIGHTNESS
+        if temperature is not None and temperature <= TEMPERATURE_THRESHOLD_F
+        else BACKDOOR_WARM_BRIGHTNESS
+    )
+    logging.info("BackDoor sunset brightness: %s%%", 50 if brightness == BACKDOOR_COOL_BRIGHTNESS else 25)
+    backdoor_payload = json.dumps({"state": "ON", "brightness": brightness})
     client.publish(BACKDOOR_LIGHT_SET_TOPIC, backdoor_payload, retain=False)
     logging.info(f"Sent sunset ON command to {BACKDOOR_LIGHT_SET_TOPIC}: {backdoor_payload}")
 

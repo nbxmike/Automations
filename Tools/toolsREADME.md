@@ -46,7 +46,8 @@ copy it again and run `daemon-reload` before restarting. Stop capture with
 
 ### Log Format And Retention
 
-Default output: `Tools/logs/mqtt_activity.jsonl`. Each line is a separate JSON
+Default output: `Tools/logs/mqtt_activity.YYYY-MM-DD.jsonl`, using the Pi's local
+date, for example `mqtt_activity.2026-10-31.jsonl`. Each line is a separate JSON
 object. UTF-8 payloads remain text, including JSON payloads stored as strings;
 non-UTF-8 payloads are base64. Newlines in payloads are escaped, and empty
 payloads are preserved. Decode according to `payload_encoding` to recover the
@@ -65,17 +66,28 @@ startup, connection attempts, subscription acknowledgements, disconnects, and
 clean shutdown. These help identify gaps; an unclean shutdown may have no stop
 event. Lifecycle events are not replayable messages.
 
-Logs rotate at 10 MiB, keeping ten backups, approximately 110 MiB total plus
-oversized individual records. `.10` is oldest, `.1` is most recent, and the
-unsuffixed file is current. Oldest logs are deleted automatically. Archive them
-before they rotate out if you want a longer activity history. Configure with
-`--output /path/capture.jsonl --max-bytes 10485760 --backups 10`; relative paths
-are relative to the working directory. Do not run two writers on one log path
-or apply external log rotation to it. Each record is flushed to the OS, not
+Each local calendar day has its own file, created on that day's first record.
+Restarts append to the same day's file. Retention is 28 calendar days including
+today and the previous 27 days, not the last 28 files. On the first record after
+startup and each date change, older dated files with the same base name and
+extension are deleted automatically. No empty files are created for idle days;
+cleanup waits until the next record if the logger is stopped or idle.
+Archive files before expiry if you need a longer history.
+
+Configure with `--output /path/capture.jsonl --retention-days 28`; this produces
+`/path/capture.YYYY-MM-DD.jsonl`. Relative paths are relative to the working
+directory. The old `--max-bytes` and `--backups` options are no longer used;
+remove them from any customized service command. Daily files have no size cap,
+so disk usage depends on traffic. Old unsuffixed logs and numbered size-rotation
+backups are left untouched; archive or remove them separately.
+Do not run two writers with the same output base or apply external log rotation.
+Each record is flushed to the OS, not
 fsynced: sudden power loss can lose recent records or leave a partial last line.
 Write failures terminate the service so systemd can report and restart it.
 
-Follow the current log with `tail -f Tools/logs/mqtt_activity.jsonl`. Logs contain
+Follow today's log with
+`tail -f "Tools/logs/mqtt_activity.$(date +%F).jsonl"`; rerun after midnight to
+follow the new day's file. Logs contain
 unredacted payloads, occupancy patterns, and potentially sensitive discovery or
 device data. The service creates owner-only files; protect any exported copies.
 
@@ -99,6 +111,46 @@ device data. The service creates owner-only files; protect any exported copies.
   session. Do not blindly replay the entire log: presence, discovery, state,
   overrides, and commands can trigger automations or produce feedback loops.
   No replay functionality is implemented here.
+
+## Busiest Weekday Logs
+
+[mqtt_busy_days.py](mqtt_busy_days.py) scans the logger's daily JSON Lines files
+and keeps the busiest log for each weekday in `Tools/logs/busydays`, named
+`monday.jsonl` through `sunday.jsonl`. Requires Python 3.8+ and no additional
+packages or broker connection. Run from the repository root:
+
+```sh
+python3 Tools/mqtt_busy_days.py
+```
+
+Each `event: "message"` record counts once, including repeated topics, retained
+snapshots, and duplicate deliveries. Lifecycle events and blank lines do not
+count. This measures observed MQTT messages, not unique topic names or confirmed
+original publications. Weekdays come from the local date in the daily filename.
+
+The script compares candidates against the saved file's message count and
+replaces it only for a strictly higher count. Ties leave the saved file untouched.
+On the first run, equal candidates are considered in date order, oldest first.
+The complete log is copied, preserving payloads, timestamps, source dates, and
+lifecycle records. Source logs are not changed. Copies are installed atomically
+and created with owner-only permissions; run only one selector at a time.
+Missing weekdays remain absent. Saved winners persist across future runs and
+are not deleted by the daily logger's 28-day cleanup.
+
+For a customized logger output base or destination:
+
+```sh
+python3 Tools/mqtt_busy_days.py --input-base /path/capture.jsonl --output-dir /path/busydays
+```
+
+The current day's log is eligible and can replace its saved weekday again as
+activity increases. Each replacement counts the copied snapshot before installing
+it. Invalid JSON (including a partial last line) or unreadable files are reported
+and skipped; a damaged saved winner is left untouched and blocks replacements
+for that weekday. Other weekdays still process, but any error gives exit status 1.
+Rerun after a partial active-log write has completed. Run regularly, for example
+daily, so potential winners are considered before the logger deletes old logs.
+This tool is a one-shot command; no service or schedule is installed automatically.
 
 ## diyHue Monitor
 

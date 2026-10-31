@@ -1,24 +1,23 @@
 #!/usr/bin/env python3
-"""Passively record MQTT messages as rotating, replay-friendly JSON Lines."""
+"""Passively record MQTT messages as daily, replay-friendly JSON Lines."""
 
 import argparse
 import base64
 import json
 import logging
-from logging.handlers import RotatingFileHandler
 from pathlib import Path
 import runpy
 import signal
 import socket
 import time
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from uuid import uuid4
 
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
-class StrictRotatingFileHandler(RotatingFileHandler):
+class StrictFileHandler(logging.FileHandler):
     def handleError(self, record):
         raise
 
@@ -52,29 +51,59 @@ def parse_args(argv=None):
     parser.add_argument("--topic", action="append", type=topic_filter,
                         help="repeatable subscription filter (default: #)")
     parser.add_argument("--output", type=Path,
-                        default=ROOT / "Tools" / "logs" / "mqtt_activity.jsonl")
-    parser.add_argument("--max-bytes", type=positive_int, default=10 * 1024 * 1024)
-    parser.add_argument("--backups", type=positive_int, default=10)
+                        default=ROOT / "Tools" / "logs" / "mqtt_activity.jsonl",
+                        help="base filename; local date is inserted before its extension")
+    parser.add_argument("--retention-days", type=positive_int, default=28,
+                        help="calendar days to keep, including today (default: 28)")
     args = parser.parse_args(argv)
     args.topic = list(dict.fromkeys(args.topic or ["#"]))
     return args
 
 
 class ActivityRecorder:
-    def __init__(self, output, max_bytes, backups):
+    def __init__(self, output, retention_days=28):
         output.parent.mkdir(parents=True, exist_ok=True)
-        self.handler = StrictRotatingFileHandler(
-            output, maxBytes=max_bytes, backupCount=backups, encoding="utf-8"
-        )
-        self.handler.setFormatter(logging.Formatter("%(message)s"))
+        self.output = output
+        self.retention_days = retention_days
+        self.handler = None
+        self.current_date = None
         self.session = uuid4().hex
         self.sequence = 0
         self.started_ns = time.monotonic_ns()
+
+    def select_daily_file(self, local_date):
+        if self.current_date == local_date:
+            return
+        self.close()
+        daily_path = self.output.with_name(
+            f"{self.output.stem}.{local_date.isoformat()}{self.output.suffix}"
+        )
+        self.handler = StrictFileHandler(daily_path, encoding="utf-8")
+        self.handler.setFormatter(logging.Formatter("%(message)s"))
+        cutoff = local_date - timedelta(days=self.retention_days - 1)
+        prefix = self.output.stem + "."
+        suffix = self.output.suffix
+        for candidate in self.output.parent.iterdir():
+            if not candidate.is_file() or not candidate.name.startswith(prefix):
+                continue
+            date_text = candidate.name[len(prefix):]
+            if suffix:
+                if not date_text.endswith(suffix):
+                    continue
+                date_text = date_text[:-len(suffix)]
+            try:
+                file_date = date.fromisoformat(date_text)
+            except ValueError:
+                continue
+            if date_text == file_date.isoformat() and file_date < cutoff:
+                candidate.unlink()
+        self.current_date = local_date
 
     def write(self, event, **fields):
         self.sequence += 1
         now = datetime.now(timezone.utc)
         local = now.astimezone()
+        self.select_daily_file(local.date())
         record = {
             "schema_version": 1,
             "timestamp": now.isoformat(timespec="microseconds"),
@@ -105,7 +134,10 @@ class ActivityRecorder:
         )
 
     def close(self):
-        self.handler.close()
+        if self.handler is not None:
+            self.handler.close()
+            self.handler = None
+        self.current_date = None
 
 
 def load_credentials():
@@ -128,7 +160,7 @@ def main(argv=None):
     from paho.mqtt import client as mqtt_client
 
     broker, port, username, password = load_credentials()
-    recorder = ActivityRecorder(args.output, args.max_bytes, args.backups)
+    recorder = ActivityRecorder(args.output, args.retention_days)
     client_id = f"{socket.gethostname()}_MQTTActivity_{recorder.session[:8]}"
     options = {"client_id": client_id, "clean_session": True}
     if hasattr(mqtt_client, "CallbackAPIVersion"):

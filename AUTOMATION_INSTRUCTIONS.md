@@ -55,12 +55,29 @@ OMADA_PASSWORD = "your_omada_password"
 | `kitchen_spectre_router.py` | `kitchen_spectre_router.service` | Listens for `kitchenGhostly` virtual-device set commands and forwards equivalent power/brightness/color-temp commands to the physical kitchen strips and dimmer topics used by `kitchen_dimming.py`. |
 | `backyard_spectre_router.py` | `backyard_spectre_router.service` | Listens for `backyardGhost` virtual-device set commands and forwards ON/brightness/color-temp commands to the Wyze outdoor plug, GardenLights, gardenPath, and BackDoor. OFF only applies to `wyzeParkingTree/POWER1`. |
 | `basement_spectre_router.py` | `basement_spectre_router.service` | Listens for `basementGhostly` virtual-device commands and forwards state, brightness, and color temperature to the `Basement_Oil_Tank_Light` Zigbee2MQTT light. |
-| `yard_sunset_automation.py` | `yard_sunset_automation.service` | Turns on both outlets of the Tasmota Wyze Plug Outdoor at sunset and turns on GardenLights, gardenPath, and the BackDoor Zigbee light at 20% brightness. |
+| `yard_sunset_automation.py` | `yard_sunset_automation.service` | Turns on both outlets of the Tasmota Wyze Plug Outdoor, GardenLights, and gardenPath at sunset. BackDoor uses 50% brightness at or below 60 F, otherwise 25%. |
 | `yard_midnight_automation.py` | `yard_midnight_automation.service` | Turns off outlet 1 of the Wyze plug and turns off the BackDoor Zigbee light at midnight, unless the late-arrival override is ON. An override older than 6 hours is treated as stale and ignored. |
 | `yard_sunrise_automation.py` | `yard_sunrise_automation.service` | Turns off both outlets of the Wyze plug at sunrise and turns off GardenLights, gardenPath, and the BackDoor Zigbee light. |
 | `yard_presence_night_off.py` | `yard_presence_night_off.service` | Between 21:00 and sunrise, when `phonePresence/everyone` has stayed true for 10 minutes and the arrival override is OFF, turns off outside lights. If Wyze/BackDoor turns back ON, the timer restarts. |
 | `presence_check_v2.py` | `presence_check_v2.service` | Polls the Omada OpenAPI client list and publishes retained boolean MQTT topics under `phonePresence/` for each tracked person plus `phonePresence/everyone` (logical AND). |
 | `omada_presence_automation.py` | `omada_presence_automation.service` | Checks the Omada controller client list and, when every expected phone is home, turns off the yard outlet 1 using the same MQTT command as the midnight automation. |
+
+### Sunset BackDoor Temperature Rule
+
+`yard_sunset_automation.py` requests approximate current outdoor air temperature
+from [Open-Meteo](https://open-meteo.com/en/docs) using its existing latitude and
+longitude. This is weather-model data, not a sensor measurement at the house.
+The free endpoint needs no API key for personal/non-commercial use. The Pi needs
+outbound HTTPS access, valid CA certificates, and an accurate system clock.
+Coordinates are sent to the weather provider. No additional Python packages are
+required.
+
+When the sunset action runs, a temperature at or below 60 F sets BackDoor to
+brightness `127` (50% of Zigbee2MQTT's 254 maximum); warmer weather uses `64`
+(approximately 25%). The lookup has a 10-second socket timeout. Missing, invalid,
+or more than one-hour-old readings fall back to 25%, with a warning in the
+service journal. Other lights retain their existing behavior. Temperature is
+checked only for the sunset action, not continuously throughout the night.
 
 ### Android Wi-Fi MAC setting for `Hornburg`
 
