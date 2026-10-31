@@ -1,6 +1,9 @@
 # Local secrets for automation scripts
 automation_credentials.py
 
+# Private MQTT activity captures
+Tools/logs/
+
 # Local backup artifacts
 backups/
 __pycache__/

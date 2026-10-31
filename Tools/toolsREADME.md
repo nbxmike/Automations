@@ -1,5 +1,105 @@
 # Tools
 
+## MQTT Activity Logger
+
+[mqtt_activity_logger.py](mqtt_activity_logger.py) passively records messages on
+the broker configured in the root credentials file. It never publishes commands.
+Requires Python 3.7+ and `paho-mqtt` (1.6+ or 2.x), available through the existing
+`install_dependencies.sh` installer. No changes to the automations are needed.
+
+The default subscription is `#`: this covers all application topics, including
+topics constructed dynamically by scripts and topics added in the future. It
+also includes unrelated broker traffic. Broker ACLs must permit subscriptions
+and delivery for the topics you want to capture. MQTT excludes `$`-prefixed
+topics from `#`; add `--topic '#' --topic '$SYS/#'` to include broker statistics.
+Use repeatable `--topic` options to restrict capture instead:
+
+```sh
+python3 Tools/mqtt_activity_logger.py
+python3 Tools/mqtt_activity_logger.py --topic 'zigbee2mqtt/#' --topic 'cmnd/#'
+python3 Tools/mqtt_activity_logger.py --help
+```
+
+### Install On The Pi
+
+The supplied service assumes `/home/pi/automations` and user `pi`, matching the
+other units. The existing service installer does not discover units in Tools;
+install this optional diagnostic service explicitly:
+
+```sh
+cd /home/pi/automations
+sudo ./install_dependencies.sh
+sed -i 's/\r$//' Tools/mqtt_activity_logger.py Tools/mqtt_activity_logger.service
+python3 -m py_compile Tools/mqtt_activity_logger.py
+sudo cp Tools/mqtt_activity_logger.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now mqtt_activity_logger.service
+systemctl status mqtt_activity_logger.service
+journalctl -u mqtt_activity_logger.service -f
+```
+
+The `pi` user needs read access to the root credentials file and write access to
+`Tools/logs` (created automatically and excluded from Git). Restart with
+`sudo systemctl restart mqtt_activity_logger.service` after updating the script. After editing the unit,
+copy it again and run `daemon-reload` before restarting. Stop capture with
+`sudo systemctl stop mqtt_activity_logger.service`.
+
+### Log Format And Retention
+
+Default output: `Tools/logs/mqtt_activity.jsonl`. Each line is a separate JSON
+object. UTF-8 payloads remain text, including JSON payloads stored as strings;
+non-UTF-8 payloads are base64. Newlines in payloads are escaped, and empty
+payloads are preserved. Decode according to `payload_encoding` to recover the
+original bytes without parsing and reserializing device JSON.
+
+```json
+{"schema_version": 1, "timestamp": "2026-10-30T12:00:00.123456+00:00", "local_time": "Friday 30/OCT/2026 08:00:00AM", "elapsed_ns": 1000000000, "session": "example", "sequence": 3, "event": "message", "topic": "cmnd/kitchenGhostly/POWER", "payload": "ON", "payload_encoding": "utf-8", "payload_bytes": 2, "qos": 0, "retain": false, "dup": false, "mid": 0}
+```
+
+Records include UTC reception time, a human-readable `local_time` using the
+host's configured timezone (the example uses UTC-04:00), monotonic nanoseconds
+since process start, a session ID, and a per-session sequence number.
+Weekday/month names and AM/PM follow the process locale, with the month uppercase.
+Non-message events record
+startup, connection attempts, subscription acknowledgements, disconnects, and
+clean shutdown. These help identify gaps; an unclean shutdown may have no stop
+event. Lifecycle events are not replayable messages.
+
+Logs rotate at 10 MiB, keeping ten backups, approximately 110 MiB total plus
+oversized individual records. `.10` is oldest, `.1` is most recent, and the
+unsuffixed file is current. Oldest logs are deleted automatically. Archive them
+before they rotate out if you want a longer activity history. Configure with
+`--output /path/capture.jsonl --max-bytes 10485760 --backups 10`; relative paths
+are relative to the working directory. Do not run two writers on one log path
+or apply external log rotation to it. Each record is flushed to the OS, not
+fsynced: sudden power loss can lose recent records or leave a partial last line.
+Write failures terminate the service so systemd can report and restart it.
+
+Follow the current log with `tail -f Tools/logs/mqtt_activity.jsonl`. Logs contain
+unredacted payloads, occupancy patterns, and potentially sensitive discovery or
+device data. The service creates owner-only files; protect any exported copies.
+
+### Capture And Future Replay Limits
+
+- This is a broker-side subscriber, not a packet sniffer. It cannot identify
+  publishers or prove a device acted on a command. Timestamps are reception
+  times, and QoS/retain/dup/mid describe delivery to this subscriber, not the
+  original publisher's packet. Subscription QoS is 1, not a guarantee of QoS 1
+  for messages originally published at QoS 0.
+- Initial connection and reconnects deliver retained snapshots marked with
+  `retain: true`; these are not necessarily new activity. A live retained publish
+  can arrive with `retain: false` under MQTT 3.1.1. The original retain setting
+  therefore cannot reliably be reconstructed.
+- Capture only runs while connected, uses a clean session, and does not recover
+  offline messages. Reconnects back off automatically from 1 to 30 seconds.
+  Overlapping custom filters and QoS retransmissions may produce duplicates;
+  messages are deliberately not deduplicated.
+- A future replay tool should allowlist intended light command topics, skip
+  retained snapshots and lifecycle records, and use relative timing within each
+  session. Do not blindly replay the entire log: presence, discovery, state,
+  overrides, and commands can trigger automations or produce feedback loops.
+  No replay functionality is implemented here.
+
 ## diyHue Monitor
 
 [diyhue_monitor.py](diyhue_monitor.py) reads the Hue v1 API exposed by a diyHue

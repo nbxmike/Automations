@@ -1,0 +1,17 @@
+[Unit]
+Description=Passive MQTT activity recorder
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/automations
+ExecStart=/usr/bin/python3 /home/pi/automations/Tools/mqtt_activity_logger.py
+Restart=on-failure
+RestartSec=5s
+Environment=PYTHONUNBUFFERED=1
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
