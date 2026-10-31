@@ -4,6 +4,9 @@ automation_credentials.py
 # Private MQTT activity captures
 Tools/logs/
 
+# Local SPE installation guide containing NDA-derived engineering notes
+/Tools/RASPBERRY_PI_TRIXIE_SPE_SETUP.md
+
 # Local backup artifacts
 backups/
 __pycache__/
