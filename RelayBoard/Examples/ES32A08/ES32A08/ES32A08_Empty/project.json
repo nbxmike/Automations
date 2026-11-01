@@ -1,0 +1,672 @@
+{
+  "meta": {
+    "name": "ES32A08_empty",
+    "type": "plc-project"
+  },
+  "data": {
+    "dataTypes": [],
+    "pous": [],
+    "configuration": {
+      "resource": {
+        "tasks": [
+          {
+            "name": "task0",
+            "triggering": "Cyclic",
+            "interval": "T#20ms",
+            "priority": 1
+          }
+        ],
+        "instances": [
+          {
+            "name": "instance0",
+            "task": "task0",
+            "program": "main"
+          }
+        ],
+        "globalVariables": [
+          {
+            "name": "InAdcVoltageValue1",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%IW4",
+            "initialValue": null,
+            "documentation": "0-10V",
+            "debug": false
+          },
+          {
+            "name": "InAdcVoltageValue2",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%IW5",
+            "initialValue": null,
+            "documentation": "0-10V",
+            "debug": false
+          },
+          {
+            "name": "InAdcVoltageValue3",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%IW6",
+            "initialValue": null,
+            "documentation": "0-10V",
+            "debug": false
+          },
+          {
+            "name": "InAdcVoltageValue4",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%IW7",
+            "initialValue": null,
+            "documentation": "0-10V",
+            "debug": false
+          },
+          {
+            "name": "InAdcmAValue1",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%IW0",
+            "initialValue": null,
+            "documentation": "4-20mA",
+            "debug": false
+          },
+          {
+            "name": "InAdcmAValue2",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%IW1",
+            "initialValue": null,
+            "documentation": "4-20mA",
+            "debug": false
+          },
+          {
+            "name": "InAdcmAValue3",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%IW2",
+            "initialValue": null,
+            "documentation": "4-20mA",
+            "debug": false
+          },
+          {
+            "name": "InAdcmAValue4",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%IW3",
+            "initialValue": null,
+            "documentation": "4-20mA",
+            "debug": false
+          },
+          {
+            "name": "Key1",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%IX0.0",
+            "initialValue": null,
+            "documentation": "Integrated Button 1",
+            "debug": false
+          },
+          {
+            "name": "Key2",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%IX0.1",
+            "initialValue": null,
+            "documentation": "Integrated Button 2",
+            "debug": false
+          },
+          {
+            "name": "Key3",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%IX0.2",
+            "initialValue": null,
+            "documentation": "Integrated Button 3",
+            "debug": false
+          },
+          {
+            "name": "Key4",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%IX0.3",
+            "initialValue": null,
+            "documentation": "Integrated Button 4",
+            "debug": false
+          },
+          {
+            "name": "In1",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%IX0.4",
+            "initialValue": null,
+            "documentation": "Input 1 - SN165N",
+            "debug": false
+          },
+          {
+            "name": "In2",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%IX0.5",
+            "initialValue": null,
+            "documentation": "Input 2 - SN165N",
+            "debug": false
+          },
+          {
+            "name": "In3",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%IX0.6",
+            "initialValue": null,
+            "documentation": "Input 3 - SN165N",
+            "debug": false
+          },
+          {
+            "name": "In4",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%IX0.7",
+            "initialValue": null,
+            "documentation": "Input 4 - SN165N",
+            "debug": false
+          },
+          {
+            "name": "In5",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%IX1.0",
+            "initialValue": null,
+            "documentation": "Input 5 - SN165N",
+            "debug": false
+          },
+          {
+            "name": "In6",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%IX1.1",
+            "initialValue": null,
+            "documentation": "Input 5 - SN165N",
+            "debug": false
+          },
+          {
+            "name": "In7",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%IX1.2",
+            "initialValue": null,
+            "documentation": "Input 5 - SN165N",
+            "debug": false
+          },
+          {
+            "name": "In8",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%IX1.3",
+            "initialValue": null,
+            "documentation": "Input 5 - SN165N",
+            "debug": false
+          },
+          {
+            "name": "Relay1",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%QX0.1",
+            "initialValue": null,
+            "documentation": "Relay Out 1 - SN595",
+            "debug": false
+          },
+          {
+            "name": "Relay2",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%QX0.2",
+            "initialValue": null,
+            "documentation": "Relay Out 2 - SN595",
+            "debug": false
+          },
+          {
+            "name": "Relay3",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%QX0.3",
+            "initialValue": null,
+            "documentation": "Relay Out 3 - SN595",
+            "debug": false
+          },
+          {
+            "name": "Relay4",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%QX0.4",
+            "initialValue": null,
+            "documentation": "Relay Out 4 - SN595",
+            "debug": false
+          },
+          {
+            "name": "Relay5",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%QX0.5",
+            "initialValue": null,
+            "documentation": "Relay Out 5 - SN595",
+            "debug": false
+          },
+          {
+            "name": "Relay6",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%QX0.6",
+            "initialValue": null,
+            "documentation": "Relay Out 6 - SN595",
+            "debug": false
+          },
+          {
+            "name": "Relay7",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%QX0.7",
+            "initialValue": null,
+            "documentation": "Relay Out 7 - SN595",
+            "debug": false
+          },
+          {
+            "name": "Relay8",
+            "type": {
+              "definition": "base-type",
+              "value": "bool"
+            },
+            "location": "%QX1.0",
+            "initialValue": null,
+            "documentation": "Relay Out 8 - SN595",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot1",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW0",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 1 Modbus Address: 4x0",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot2",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW1",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 2 Modbus Address: 4x01",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot3",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW2",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 3 Modbus Address: 4x2",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot4",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW3",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 4 Modbus Address: 4x3",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot5",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW4",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 5 Modbus Address: 4x4",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot6",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW5",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 6 Modbus Address: 4x5",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot7",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW6",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 7 Modbus Address: 4x6",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot8",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW7",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 8 Modbus Address: 4x7",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot9",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW8",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 9 Modbus Address: 4x8",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot10",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW9",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 10 Modbus Address: 4x9",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot11",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW10",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 11 Modbus Address: 4x10",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot12",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW11",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 12 Modbus Address: 4x11",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot13",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW12",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 13 Modbus Address: 4x12",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot14",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW13",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 14 Modbus Address: 4x13",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot15",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW14",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 15 Modbus Address: 4x14",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot16",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW15",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 16 Modbus Address: 4x15",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot17",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW16",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 17 Modbus Address: 4x16",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot18",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW17",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 18 Modbus Address: 4x17",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot19",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW18",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 19 Modbus Address: 4x18",
+            "debug": false
+          },
+          {
+            "name": "EepromMemorySlot20",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW19",
+            "initialValue": null,
+            "documentation": "Retentive Memory Slot 20 Modbus Address: 4x19",
+            "debug": false
+          },
+          {
+            "name": "MemoryValuesSlot1",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW20",
+            "initialValue": null,
+            "documentation": "Memory Slot 1 Modbus Address: 4x20",
+            "debug": false
+          },
+          {
+            "name": "MemoryValuesSlot2",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW21",
+            "initialValue": null,
+            "documentation": "Memory Slot 2 Modbus Address: 4x21",
+            "debug": false
+          },
+          {
+            "name": "MemoryValuesSlot3",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW22",
+            "initialValue": null,
+            "documentation": "Memory Slot 3 Modbus Address: 4x22",
+            "debug": false
+          },
+          {
+            "name": "MemoryValuesSlot4",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW23",
+            "initialValue": null,
+            "documentation": "Memory Slot 4 Modbus Address: 4x23",
+            "debug": false
+          },
+          {
+            "name": "MemoryValuesSlot5",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW24",
+            "initialValue": null,
+            "documentation": "Memory Slot 5 Modbus Address: 4x24",
+            "debug": false
+          },
+          {
+            "name": "MemoryValuesSlot6",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW25",
+            "initialValue": null,
+            "documentation": "Memory Slot 6 Modbus Address: 4x25",
+            "debug": false
+          },
+          {
+            "name": "MemoryValuesSlot7",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW26",
+            "initialValue": null,
+            "documentation": "Memory Slot 7 Modbus Address: 4x26",
+            "debug": false
+          },
+          {
+            "name": "MemoryValuesSlot8",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW27",
+            "initialValue": null,
+            "documentation": "Memory Slot 8 Modbus Address: 4x27",
+            "debug": false
+          },
+          {
+            "name": "MemoryValuesSlot9",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW28",
+            "initialValue": null,
+            "documentation": "Memory Slot 9 Modbus Address: 4x28",
+            "debug": false
+          },
+          {
+            "name": "MemoryValuesSlot10",
+            "type": {
+              "definition": "base-type",
+              "value": "uint"
+            },
+            "location": "%QW29",
+            "initialValue": null,
+            "documentation": "Memory Slot 10 Modbus Address: 4x29",
+            "debug": false
+          }
+        ]
+      }
+    },
+    "deletedPous": [],
+    "deletedServers": [],
+    "deletedRemoteDevices": []
+  }
+}
