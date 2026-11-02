@@ -1,15 +1,5 @@
 # Tools
 
-## Raspberry Pi Trixie SPE Setup
-
-[RASPBERRY_PI_TRIXIE_SPE_SETUP.md](RASPBERRY_PI_TRIXIE_SPE_SETUP.md) covers
-single-pair Ethernet interface bring-up, ADIN1110 and LAN8651 SPI device-tree
-templates, PLCA, IP configuration, testing, and recovery. It also records the
-unresolved datasheet/board requirements for NCV7410 and T30HM1TS2500, plus the
-confirmed DP83TD555J-Q1 SPI MAC-PHY architecture and remaining driver/wiring gaps.
-The templates are not hardware-tested; check the actual board and installed
-kernel before use.
-
 ## MQTT Activity Logger
 
 [mqtt_activity_logger.py](mqtt_activity_logger.py) passively records messages on
