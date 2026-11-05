@@ -1,0 +1,21 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "C_Cpp.default.configurationProvider": "platformio.platformio-ide",
+    "files.watcherExclude": {
+      "**/.pio/**": true
+    },
+    "search.exclude": {
+      "**/.pio/**": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "platformio.platformio-ide"
+    ]
+  }
+}

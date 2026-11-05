@@ -1,5 +1,6 @@
 # Local secrets for automation scripts
 automation_credentials.py
+wifi_secrets.h
 
 # Private MQTT activity captures
 Tools/logs/
