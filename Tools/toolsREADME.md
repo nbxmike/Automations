@@ -1,5 +1,51 @@
 # Tools
 
+## Automation Service Shortlist
+
+[list_automation_services.py](list_automation_services.py) produces a read-only
+shortlist of systemd services for manual review on Raspberry Pi OS / Debian
+Trixie. Requires Python 3.9+ and systemctl with JSON listing support; no extra
+packages, MQTT access, or service installation are needed. Run on the Pi:
+
+```sh
+cd /home/pi/automations
+python3 Tools/list_automation_services.py
+python3 Tools/list_automation_services.py --running-only
+python3 Tools/list_automation_services.py --format csv > service_candidates.csv
+python3 Tools/list_automation_services.py --format json > service_candidates.json
+```
+
+By default, includes installed and loaded system services, including disabled,
+inactive, and failed units. Uninstantiated templates are skipped; loaded template
+instances are inspected. Distro units under `/usr/lib/systemd` or `/lib/systemd`
+are hidden unless ExecStart or WorkingDirectory references `/home`, `/root`,
+`/opt`, `/srv`, `/usr/local`, `/mnt`, or `/media`. Other unit locations, including
+`/etc/systemd/system` and `/run/systemd`, remain candidates even for non-Python
+services. This intentionally keeps false positives rather than identifying old
+versions or declaring services safe to remove.
+
+Reports service state, enablement, PID, configured user, unit/source/drop-in
+paths, working directory, effective ExecStart, a Python hint, and inclusion
+reason. The Python hint comes from ExecStart, not live process inspection;
+wrappers, Python modules, unusual paths, and paths containing spaces can evade
+the heuristics. Drop-ins are reported but their locations alone do not trigger
+inclusion. ExecStart reflects systemd's loaded configuration, which can differ
+from edited files until a daemon reload. Script contents are not read or run.
+
+```sh
+python3 Tools/list_automation_services.py --include-vendor
+python3 Tools/list_automation_services.py --exclude-prefix /etc/systemd/system/unrelated
+python3 Tools/list_automation_services.py --user
+```
+
+`--exclude-prefix` is repeatable and filters by unit-file location, not script
+location. `--user` scans only the invoking user's manager; it does not include
+other users or system services. Normally no sudo is needed. Inspection failures
+are reported on stderr with exit status 1; successfully inspected candidates are
+still output. Counts go to stderr so CSV/JSON stdout stays machine-readable.
+No units are stopped, disabled, removed, or restarted. Reports include unredacted
+ExecStart arguments, which may contain secrets; review before sharing.
+
 ## MQTT Activity Logger
 
 [mqtt_activity_logger.py](mqtt_activity_logger.py) passively records messages on
