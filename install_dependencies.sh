@@ -16,7 +16,7 @@ if [ ! -d "$AUTOMATIONS_DIR" ]; then
 fi
 
 # Repair files copied from Windows before installing dependencies.
-for file in "$AUTOMATIONS_DIR"/*.service "$AUTOMATIONS_DIR"/*.py "$AUTOMATIONS_DIR"/*.sh; do
+for file in "$AUTOMATIONS_DIR"/*.service "$AUTOMATIONS_DIR"/*.py "$AUTOMATIONS_DIR"/*.sh "$AUTOMATIONS_DIR"/Actions/*.service "$AUTOMATIONS_DIR"/Actions/*.py "$AUTOMATIONS_DIR"/Actions/*.sh; do
     [ -f "$file" ] || continue
     if ! sed -i 's/\r$//' "$file"; then
         echo "Could not normalize line endings: $file" >&2

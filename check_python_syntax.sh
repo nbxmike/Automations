@@ -9,7 +9,7 @@ if [ ! -d "$SCRIPT_DIR" ]; then
 fi
 
 # Repair files copied from Windows before checking or running them.
-for file in "$SCRIPT_DIR"/*.service "$SCRIPT_DIR"/*.py "$SCRIPT_DIR"/*.sh "$SCRIPT_DIR"/Routers/*.service "$SCRIPT_DIR"/Routers/*.py "$SCRIPT_DIR"/Routers/*.sh; do
+for file in "$SCRIPT_DIR"/*.service "$SCRIPT_DIR"/*.py "$SCRIPT_DIR"/*.sh "$SCRIPT_DIR"/Actions/*.service "$SCRIPT_DIR"/Actions/*.py "$SCRIPT_DIR"/Actions/*.sh "$SCRIPT_DIR"/Routers/*.service "$SCRIPT_DIR"/Routers/*.py "$SCRIPT_DIR"/Routers/*.sh; do
     [ -f "$file" ] || continue
     if ! sed -i 's/\r$//' "$file"; then
         echo "Could not normalize line endings: $file" >&2
@@ -30,15 +30,15 @@ cd "$SCRIPT_DIR" || exit 1
 python_files=(
     "Routers/backyard_spectre_router.py"
     "Routers/basement_spectre_router.py"
-    "default_color_temp.py"
-    "kitchen_dimming.py"
-    "kitchen_early_morning_on.py"
+    "Actions/default_color_temp.py"
+    "Actions/kitchen_dimming.py"
+    "Actions/kitchen_early_morning_on.py"
     "Routers/kitchen_spectre_router.py"
-    "presence_check_v2.py"
-    "yard_midnight_automation.py"
-    "yard_presence_night_off.py"
-    "yard_sunrise_automation.py"
-    "yard_sunset_automation.py"
+    "Actions/presence_check_v2.py"
+    "Actions/yard_midnight_automation.py"
+    "Actions/yard_presence_night_off.py"
+    "Actions/yard_sunrise_automation.py"
+    "Actions/yard_sunset_automation.py"
     "Spectres/arrivalOverride.py"
     "Spectres/backGardenSpectre.py"
     "Spectres/BackyardSpecter.py"

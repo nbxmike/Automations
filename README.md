@@ -14,7 +14,7 @@ I do not think that anyone will want to use my automations as is.  I am publishi
 - **Outdoor lighting and outlets:** controls the outdoor plug and back-door light around sunset, midnight, and sunrise, with a late-arrival override.
 - **Phone presence:** polls the Omada controller for configured phones and publishes retained per-person and household presence topics over MQTT. Other automations can use that state to control outdoor devices.
 
-The `.service` files run the automations under systemd. The shell scripts install dependencies, validate Python syntax, install or reinstall services, and remove stale service units.
+The Python automations and their `.service` files are in `Actions/`. They run under systemd; the shell scripts install dependencies, validate Python syntax, install or reinstall services, and remove stale service units.
 
 Zigbee2MQTT, Tasmota, , and phone-presence state across a Mosquitto broker and an Omada network controller.
 ## Integrations
@@ -33,7 +33,7 @@ Runtime credentials are supplied through a local `automation_credentials.py` mod
 
 For installation prerequisites, the configuration template, service commands, Android Wi-Fi MAC guidance, and maintenance procedures, see [AUTOMATION_INSTRUCTIONS.md](AUTOMATION_INSTRUCTIONS.md). Omada-specific setup and permissions are also documented in [OMADA_SETUP.md](OMADA_SETUP.md) and [OMADA_PERMISSION_CHECKLIST.md](OMADA_PERMISSION_CHECKLIST.md).
 
-The dependency installer uses the host's APT packages for Python, Paho MQTT, and Astral. Install dependencies before enabling services. The detailed instructions describe the expected `/home/pi/automations` deployment path and the service installation workflow.
+The dependency installer uses the host's APT packages for Python, Paho MQTT, and Astral. Install dependencies before enabling services. The detailed instructions describe the expected `/home/pi/automations` deployment path, `Actions/` directory, and service installation workflow.
 
 ## diyHue Device Monitor
 

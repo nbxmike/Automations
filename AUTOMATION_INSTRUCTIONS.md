@@ -9,11 +9,12 @@ These scripts run on a Raspberry Pi as systemd services from `/home/pi/automatio
 Run these on the Pi:
 
 ```sh
-# 1. Put all files in /home/pi/automations, then fix line endings and permissions
+# 1. Copy the repository to /home/pi/automations, preserving its subdirectories,
+#    then fix line endings and permissions.
 #    (needed when the files were edited on Windows). No sudo needed; you own these files.
 cd /home/pi/automations
-sed -i 's/\r$//' /home/pi/automations/*.service /home/pi/automations/*.py /home/pi/automations/*.sh
-chmod +x *.sh *.py
+sed -i 's/\r$//' /home/pi/automations/*.service /home/pi/automations/*.py /home/pi/automations/*.sh /home/pi/automations/Actions/*.service /home/pi/automations/Actions/*.py
+chmod +x *.sh Actions/*.py
 
 # 2. Install dependencies. REQUIRED FIRST. Needs sudo.
 sudo ./install_dependencies.sh
@@ -29,7 +30,7 @@ sudo ./install_services.sh --all
 
 Each automation script now reads its broker and controller credentials from a local file named `automation_credentials.py`. That file is git-ignored, so the real username/password values are kept off the remote repository.
 
-Create `automation_credentials.py` beside the scripts and fill in your local values before running anything:
+Create `automation_credentials.py` in `/home/pi/automations` beside the support scripts and fill in your local values before running anything:
 
 ```python
 MQTT_BROKER = "www.xxx.yyy.zzz"
@@ -50,17 +51,17 @@ OMADA_PASSWORD = "your_omada_password"
 | Python script | Service file | What it does |
 |---|---|---|
 | `kitchen_morning.py` | `kitchen_morning.service` | When kitchen presence is detected between 05:00 and sunrise, and all lights are off, turns on the kitchen LED strips and the Girier dimmer. |
-| `kitchen_early_morning_on.py` | `kitchen_early_morning_on.service` | When presence is detected between 05:00 and sunrise, turns on the kitchen LED strips (warm white), outlet 1 of the Wyze plug, GardenLights, gardenPath, and the BackDoor Zigbee light at 20% brightness. |
-| `kitchen_dimming.py` | `kitchen_dimming.service` | Dims kitchen lights after 10 minutes of vacancy. If the service dimmed lights, it restores them to about 80% after 3 continuous minutes of occupancy between sunset and sunrise, unless Alexa manually intervenes. |
+| `Actions/kitchen_early_morning_on.py` | `Actions/kitchen_early_morning_on.service` | When presence is detected between 05:00 and sunrise, turns on the kitchen LED strips (warm white), outlet 1 of the Wyze plug, GardenLights, gardenPath, and the BackDoor Zigbee light at 20% brightness. |
+| `Actions/kitchen_dimming.py` | `Actions/kitchen_dimming.service` | Dims kitchen lights after 10 minutes of vacancy. If the service dimmed lights, it restores them to about 80% after 3 continuous minutes of occupancy between sunset and sunrise, unless Alexa manually intervenes. |
 | `kitchen_spectre_router.py` | `kitchen_spectre_router.service` | Listens for `kitchenGhostly` virtual-device set commands and forwards equivalent power/brightness/color-temp commands to the physical kitchen strips and dimmer topics used by `kitchen_dimming.py`. |
 | `backyard_spectre_router.py` | `backyard_spectre_router.service` | Listens for `backyardGhost` virtual-device set commands and forwards ON/brightness/color-temp commands to the Wyze outdoor plug, GardenLights, gardenPath, and BackDoor. OFF only applies to `wyzeParkingTree/POWER1`. |
 | `basement_spectre_router.py` | `basement_spectre_router.service` | Listens for `basementGhostly` virtual-device commands and forwards state, brightness, and color temperature to the `Basement_Oil_Tank_Light` Zigbee2MQTT light. |
-| `yard_sunset_automation.py` | `yard_sunset_automation.service` | Turns on both outlets of the Tasmota Wyze Plug Outdoor, GardenLights, and gardenPath at sunset. BackDoor uses 50% brightness at or below 60 F, otherwise 25%. |
-| `yard_midnight_automation.py` | `yard_midnight_automation.service` | Turns off outlet 1 of the Wyze plug and turns off the BackDoor Zigbee light at midnight, unless the late-arrival override is ON. An override older than 6 hours is treated as stale and ignored. |
-| `yard_sunrise_automation.py` | `yard_sunrise_automation.service` | Turns off both outlets of the Wyze plug at sunrise and turns off GardenLights, gardenPath, and the BackDoor Zigbee light. |
-| `yard_presence_night_off.py` | `yard_presence_night_off.service` | Between 21:00 and sunrise, when `phonePresence/everyone` has stayed true for 10 minutes and the arrival override is OFF, turns off outside lights. If Wyze/BackDoor turns back ON, the timer restarts. |
-| `presence_check_v2.py` | `presence_check_v2.service` | Polls the Omada OpenAPI client list and publishes retained boolean MQTT topics under `phonePresence/` for each tracked person plus `phonePresence/everyone` (logical AND). |
-| `omada_presence_automation.py` | `omada_presence_automation.service` | Checks the Omada controller client list and, when every expected phone is home, turns off the yard outlet 1 using the same MQTT command as the midnight automation. |
+| `Actions/yard_sunset_automation.py` | `Actions/yard_sunset_automation.service` | Turns on both outlets of the Tasmota Wyze Plug Outdoor, GardenLights, and gardenPath at sunset. BackDoor uses 50% brightness at or below 60 F, otherwise 25%. |
+| `Actions/yard_midnight_automation.py` | `Actions/yard_midnight_automation.service` | Turns off outlet 1 of the Wyze plug and turns off the BackDoor Zigbee light at midnight, unless the late-arrival override is ON. An override older than 6 hours is treated as stale and ignored. |
+| `Actions/yard_sunrise_automation.py` | `Actions/yard_sunrise_automation.service` | Turns off both outlets of the Wyze plug at sunrise and turns off GardenLights, gardenPath, and the BackDoor Zigbee light. |
+| `Actions/yard_presence_night_off.py` | `Actions/yard_presence_night_off.service` | Between 21:00 and sunrise, when `phonePresence/everyone` has stayed true for 10 minutes and the arrival override is OFF, turns off outside lights. If Wyze/BackDoor turns back ON, the timer restarts. |
+| `Actions/presence_check_v2.py` | `Actions/presence_check_v2.service` | Polls the Omada OpenAPI client list and publishes retained boolean MQTT topics under `phonePresence/` for each tracked person plus `phonePresence/everyone` (logical AND). |
+| `Actions/omada_presence_automation.py` | `Actions/omada_presence_automation.service` | Checks the Omada controller client list and, when every expected phone is home, turns off the yard outlet 1 using the same MQTT command as the midnight automation. |
 
 ### Sunset BackDoor Temperature Rule
 
@@ -126,16 +127,16 @@ Installs everything the automations need. It uses APT packages (`python3`, `pyth
 ### `install_services.sh` (sudo required)
 
 ```sh
-sed -i 's/\r$//' /home/pi/automations/*.service /home/pi/automations/*.py /home/pi/automations/*.sh
+sed -i 's/\r$//' /home/pi/automations/*.service /home/pi/automations/*.py /home/pi/automations/*.sh /home/pi/automations/Actions/*.service /home/pi/automations/Actions/*.py
 
-sudo ./install_services.sh --all                  # every *.service in /home/pi/automations
+sudo ./install_services.sh --all                  # every installable service, including Actions/
 sudo ./install_services.sh presence_check_v2      # one service (".service" suffix optional)
 sudo ./install_services.sh                        # list available services
 ```
 
 Checks every selected service before changing anything. It stops with instructions if any of these is true:
 - A service file or its Python script is missing.
-- A script is outside `/home/pi/automations`.
+- A script is outside `/home/pi/automations` or its supported subdirectories.
 - A file has Windows line endings, or a script has a syntax error.
 
 When the checks pass, it copies the unit files to `/etc/systemd/system`, reloads systemd, then enables and starts each service. It also confirms each one is still running. If a service fails to start, it prints the `journalctl` command to use.
@@ -145,7 +146,7 @@ When the checks pass, it copies the unit files to `/etc/systemd/system`, reloads
 Use this after editing Python scripts or service files in `/home/pi/automations`. It accepts the same service name or `--all` options, then runs the installer to validate the scripts, install updated unit files, and restart the selected services.
 
 ```sh
-sed -i 's/\r$//' /home/pi/automations/*.service /home/pi/automations/*.py /home/pi/automations/*.sh
+sed -i 's/\r$//' /home/pi/automations/*.service /home/pi/automations/*.py /home/pi/automations/*.sh /home/pi/automations/Actions/*.service /home/pi/automations/Actions/*.py
 
 sudo ./reinstall_services.sh presence_check_v2
 sudo ./reinstall_services.sh --all
@@ -157,7 +158,7 @@ sudo ./reinstall_services.sh --all
 ./check_python_syntax.sh
 ```
 
-Byte-compiles every automation script in `/home/pi/automations` and reports any that are missing or have syntax errors. It only reads the scripts, so it doesn't need root.
+Byte-compiles automation scripts in `/home/pi/automations`, `Actions/`, `Routers/`, and `Spectres/`, and reports any that are missing or have syntax errors. It only reads the scripts, so it doesn't need root.
 
 ### `fix_services.txt`
 

@@ -1,5 +1,5 @@
 # Runs yard_presence_night_off.py as a systemd service for the selected user,
-# assuming the script is installed at /home/pi/automations/yard_presence_night_off.py.
+# assuming the script is installed at /home/pi/automations/Actions/yard_presence_night_off.py.
 [Unit]
 Description=Yard night presence off automation for pi
 Wants=network-online.target
@@ -9,7 +9,8 @@ After=network-online.target
 Type=simple
 User=pi
 WorkingDirectory=/home/pi/automations
-ExecStart=/usr/bin/python3 /home/pi/automations/yard_presence_night_off.py
+Environment=PYTHONPATH=/home/pi/automations
+ExecStart=/usr/bin/python3 /home/pi/automations/Actions/yard_presence_night_off.py
 Restart=on-failure
 RestartSec=5s
 Environment=PYTHONUNBUFFERED=1
