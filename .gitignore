@@ -1,6 +1,7 @@
 # Local secrets for automation scripts
 automation_credentials.py
 wifi_secrets.h
+/RelayBoard/include/config_secrets.h
 
 # Private MQTT activity captures
 Tools/logs/

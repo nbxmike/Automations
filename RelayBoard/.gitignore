@@ -1,3 +1,2 @@
-wifi_secrets.h
 .pio/
-/include/mqtt_secrets.h
+/include/config_secrets.h

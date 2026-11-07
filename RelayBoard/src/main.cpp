@@ -2,8 +2,8 @@
 #include <PubSubClient.h>
 #include <WiFi.h>
 
+#include "config_secrets.h"
 #include "mqtt_config.h"
-#include "../wifi_secrets.h"
 
 namespace {
 
