@@ -1,5 +1,5 @@
-# Force bash scripts and source code to always use LF line endings
-* text=auto
+# Use LF for all detected text files; leave binary files unchanged.
+* text=auto eol=lf
 
 *.sh text eol=lf
 *.py text eol=lf
