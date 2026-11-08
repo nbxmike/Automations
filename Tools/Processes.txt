@@ -1,0 +1,279 @@
+service: BackyardSpecter.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 12311
+user: pi
+unit_path: /etc/systemd/system/BackyardSpecter.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations/Spectres
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/Spectres/BackyardSpecter.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: arrivalOverride.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 12077
+user: pi
+unit_path: /etc/systemd/system/arrivalOverride.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations/Spectres
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/Spectres/arrivalOverride.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: backGardenSpectre.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 12194
+user: pi
+unit_path: /etc/systemd/system/backGardenSpectre.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations/Spectres
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/Spectres/backGardenSpectre.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: backyard_spectre_router.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 13132
+user: pi
+unit_path: /etc/systemd/system/backyard_spectre_router.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/backyard_spectre_router.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: basementSpectre.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 12429
+user: pi
+unit_path: /etc/systemd/system/basementSpectre.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations/Spectres
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/Spectres/basementSpectre.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: basement_spectre_router.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 13250
+user: pi
+unit_path: /etc/systemd/system/basement_spectre_router.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/Routers/basement_spectre_router.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: default_color_temp.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 10958
+user: pi
+unit_path: /etc/systemd/system/default_color_temp.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/default_color_temp.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: diningRoomSpectre.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 12546
+user: pi
+unit_path: /etc/systemd/system/diningRoomSpectre.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations/Spectres
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/Spectres/diningRoomSpectre.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: kitchenSpecter.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 12664
+user: pi
+unit_path: /etc/systemd/system/kitchenSpecter.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations/Spectres
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/Spectres/kitchenSpecter.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: kitchen_dimming.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 11077
+user: pi
+unit_path: /etc/systemd/system/kitchen_dimming.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/kitchen_dimming.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: kitchen_early_morning_on.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 11218
+user: pi
+unit_path: /etc/systemd/system/kitchen_early_morning_on.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/kitchen_early_morning_on.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: kitchen_spectre_router.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 13369
+user: pi
+unit_path: /etc/systemd/system/kitchen_spectre_router.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/kitchen_spectre_router.py ; ignore_errors=no ; start_time=[Mon 2026-10-26 20:25:07 EDT] ; stop_time=[n/a] ; pid=13369 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: livingRoomSpectre.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 12781
+user: pi
+unit_path: /etc/systemd/system/livingRoomSpectre.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations/Spectres
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/Spectres/livingRoomSpectre.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: masterBedroomSpecter.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 12898
+user: pi
+unit_path: /etc/systemd/system/masterBedroomSpecter.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations/Spectres
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/Spectres/masterBedroomSpecter.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: outdoorSpecter.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 13015
+user: pi
+unit_path: /etc/systemd/system/outdoorSpecter.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations/Spectres
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/Spectres/outdoorSpecter.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: presence_check_v2.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 11486
+user: pi
+unit_path: /etc/systemd/system/presence_check_v2.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/presence_check_v2.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: yard_midnight_automation.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 11604
+user: pi
+unit_path: /etc/systemd/system/yard_midnight_automation.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/yard_midnight_automation.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: yard_presence_night_off.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 11723
+user: pi
+unit_path: /etc/systemd/system/yard_presence_night_off.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/yard_presence_night_off.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: yard_sunrise_automation.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 11841
+user: pi
+unit_path: /etc/systemd/system/yard_sunrise_automation.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/yard_sunrise_automation.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path
+
+service: yard_sunset_automation.service
+active: active
+substate: running
+enabled: enabled
+python_hint: likely
+pid: 11959
+user: pi
+unit_path: /etc/systemd/system/yard_sunset_automation.service
+source_path: 
+drop_ins: 
+working_directory: /home/pi/automations
+exec_start: { path=/usr/bin/python3 ; argv[]=/usr/bin/python3 /home/pi/automations/yard_sunset_automation.py ; ignore_errors=no ; start_time=[n/a] ; stop_time=[n/a] ; pid=0 ; code=(null) ; status=0/0 }
+reason: non-vendor unit location; custom workload path

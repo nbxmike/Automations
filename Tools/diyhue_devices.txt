@@ -1,0 +1,530 @@
+
+MONITOR STARTED 2026-10-24T12:38:14-04:00 | http://172.24.32.102
+Read-only Hue v1 polling; cannot identify command sender or capture changes between polls.
+2026-10-24T12:38:17-04:00 | ERROR: Request failed (URLError); check connectivity, TLS, and JSON response
+
+MONITOR STARTED 2026-10-24T12:40:58-04:00 | http://172.24.34.112
+Read-only Hue v1 polling; cannot identify command sender or capture changes between polls.
+
+========================================================================
+2026-10-24T12:40:58-04:00 | http://172.24.34.112
+INITIAL INVENTORY
+
+RESOURCE INDEX
+groups: 0
+lights: 9
+  1: backGardenGhostly | type=Color temperature light
+  2: arrivalOverride | type=On/Off plug-in unit
+  3: diningRoomGhostly | type=Color temperature light
+  4: kitchenGhostly | type=Color temperature light
+  5: livingRoomGhostly | type=Color temperature light
+  6: masterBedroomGhostly | type=Color temperature light
+  7: basementGhostly | type=Color temperature light
+  8: outdoorGhostly | type=Color temperature light
+  9: backyardGhostly | type=Color temperature light
+resourcelinks: 0
+rules: 0
+scenes: 0
+schedules: 0
+sensors: 1
+  1: Daylight | type=Daylight
+
+FULL HUE V1 ATTRIBUTES (known credential fields redacted)
+{
+  "config": {
+    "Hue Essentials key": "0312e688cb1711f1bd8db827eb3f273d",
+    "LogLevel": "INFO",
+    "Remote API enabled": false,
+    "UTC": "2026-10-24T16:40:58",
+    "apiversion": "6.3.0",
+    "backup": {
+      "errorcode": 0,
+      "status": "idle"
+    },
+    "bridgeid": "B827EBFFFE3F273D",
+    "datastoreversion": "126",
+    "dhcp": true,
+    "discovery": true,
+    "factorynew": false,
+    "gateway": "172.24.34.1",
+    "internetservices": {
+      "internet": "disconnected",
+      "remoteaccess": "disconnected",
+      "swupdate": "disconnected",
+      "time": "disconnected"
+    },
+    "ipaddress": "172.24.34.112",
+    "linkbutton": false,
+    "localtime": "2026-10-24T12:40:58",
+    "mac": "b8:27:eb:3f:27:3d",
+    "modelid": "BSB002",
+    "name": "DiyHue Bridge",
+    "netmask": "255.255.255.0",
+    "portalconnection": "disconnected",
+    "portalservices": false,
+    "portalstate": {
+      "communication": "disconnected",
+      "incoming": false,
+      "outgoing": false,
+      "signedon": false
+    },
+    "proxyaddress": "none",
+    "proxyport": 0,
+    "replacesbridgeid": null,
+    "swupdate": {
+      "checkforupdate": false,
+      "devicetypes": {
+        "bridge": false,
+        "lights": [],
+        "sensors": []
+      },
+      "notify": true,
+      "text": "",
+      "updatestate": 0,
+      "url": ""
+    },
+    "swupdate2": {
+      "autoinstall": {
+        "on": false,
+        "updatetime": "T14:00:00"
+      },
+      "bridge": {
+        "lastinstall": "2026-10-22T12:36:51",
+        "state": "noupdates"
+      },
+      "checkforupdate": false,
+      "install": false,
+      "lastchange": "2026-10-22T12:36:51",
+      "state": "allreadytoinstall"
+    },
+    "swversion": "1978545030",
+    "timezone": "EST5EDT",
+    "whitelist": "[REDACTED]",
+    "zigbeechannel": 25
+  },
+  "groups": {},
+  "lights": {
+    "1": {
+      "capabilities": {
+        "certified": true,
+        "control": {
+          "ct": {
+            "max": 454,
+            "min": 153
+          },
+          "maxlumen": 806,
+          "mindimlevel": 1000
+        },
+        "streaming": {
+          "proxy": false,
+          "renderer": false
+        }
+      },
+      "config": {
+        "archetype": "classicbulb",
+        "direction": "omnidirectional",
+        "function": "functional",
+        "startup": {
+          "configured": true,
+          "mode": "safety"
+        }
+      },
+      "manufacturername": "Signify Netherlands B.V.",
+      "modelid": "LTW001",
+      "name": "backGardenGhostly",
+      "state": {
+        "alert": "none",
+        "bri": 254,
+        "colormode": "ct",
+        "ct": 230,
+        "mode": "homeautomation",
+        "on": true,
+        "reachable": true
+      },
+      "swupdate": {
+        "lastinstall": "2020-12-09T19:13:52",
+        "state": "noupdates"
+      },
+      "swversion": "1.104.2",
+      "type": "Color temperature light",
+      "uniqueid": "00:17:88:01:00:cf:49:d1-0b"
+    },
+    "2": {
+      "capabilities": {
+        "certified": true,
+        "control": {},
+        "streaming": {
+          "proxy": false,
+          "renderer": false
+        }
+      },
+      "config": {
+        "archetype": "plug",
+        "direction": "omnidirectional",
+        "function": "functional",
+        "startup": {
+          "configured": true,
+          "mode": "safety"
+        }
+      },
+      "manufacturername": "Signify Netherlands B.V.",
+      "modelid": "LOM001",
+      "name": "arrivalOverride",
+      "productid": "SmartPlug_OnOff_v01-00_01",
+      "productname": "Hue Smart plug",
+      "state": {
+        "alert": "select",
+        "mode": "homeautomation",
+        "on": false,
+        "reachable": true
+      },
+      "swconfigid": "A641B5AB",
+      "swupdate": {
+        "lastinstall": "2020-12-09T19:13:52",
+        "state": "noupdates"
+      },
+      "swversion": "1.104.2",
+      "type": "On/Off plug-in unit",
+      "uniqueid": "00:17:88:01:00:8b:b3:ff-0b"
+    },
+    "3": {
+      "capabilities": {
+        "certified": true,
+        "control": {
+          "ct": {
+            "max": 454,
+            "min": 153
+          },
+          "maxlumen": 806,
+          "mindimlevel": 1000
+        },
+        "streaming": {
+          "proxy": false,
+          "renderer": false
+        }
+      },
+      "config": {
+        "archetype": "classicbulb",
+        "direction": "omnidirectional",
+        "function": "functional",
+        "startup": {
+          "configured": true,
+          "mode": "safety"
+        }
+      },
+      "manufacturername": "Signify Netherlands B.V.",
+      "modelid": "LTW001",
+      "name": "diningRoomGhostly",
+      "state": {
+        "alert": "none",
+        "bri": 254,
+        "colormode": "ct",
+        "ct": 230,
+        "mode": "homeautomation",
+        "on": true,
+        "reachable": true
+      },
+      "swupdate": {
+        "lastinstall": "2020-12-09T19:13:52",
+        "state": "noupdates"
+      },
+      "swversion": "1.104.2",
+      "type": "Color temperature light",
+      "uniqueid": "00:17:88:01:00:c9:d2:ad-0b"
+    },
+    "4": {
+      "capabilities": {
+        "certified": true,
+        "control": {
+          "ct": {
+            "max": 454,
+            "min": 153
+          },
+          "maxlumen": 806,
+          "mindimlevel": 1000
+        },
+        "streaming": {
+          "proxy": false,
+          "renderer": false
+        }
+      },
+      "config": {
+        "archetype": "classicbulb",
+        "direction": "omnidirectional",
+        "function": "functional",
+        "startup": {
+          "configured": true,
+          "mode": "safety"
+        }
+      },
+      "manufacturername": "Signify Netherlands B.V.",
+      "modelid": "LTW001",
+      "name": "kitchenGhostly",
+      "state": {
+        "alert": "none",
+        "bri": 254,
+        "colormode": "ct",
+        "ct": 230,
+        "mode": "homeautomation",
+        "on": true,
+        "reachable": true
+      },
+      "swupdate": {
+        "lastinstall": "2020-12-09T19:13:52",
+        "state": "noupdates"
+      },
+      "swversion": "1.104.2",
+      "type": "Color temperature light",
+      "uniqueid": "00:17:88:01:00:db:b7:e6-0b"
+    },
+    "5": {
+      "capabilities": {
+        "certified": true,
+        "control": {
+          "ct": {
+            "max": 454,
+            "min": 153
+          },
+          "maxlumen": 806,
+          "mindimlevel": 1000
+        },
+        "streaming": {
+          "proxy": false,
+          "renderer": false
+        }
+      },
+      "config": {
+        "archetype": "classicbulb",
+        "direction": "omnidirectional",
+        "function": "functional",
+        "startup": {
+          "configured": true,
+          "mode": "safety"
+        }
+      },
+      "manufacturername": "Signify Netherlands B.V.",
+      "modelid": "LTW001",
+      "name": "livingRoomGhostly",
+      "state": {
+        "alert": "none",
+        "bri": 254,
+        "colormode": "ct",
+        "ct": 230,
+        "mode": "homeautomation",
+        "on": true,
+        "reachable": true
+      },
+      "swupdate": {
+        "lastinstall": "2020-12-09T19:13:52",
+        "state": "noupdates"
+      },
+      "swversion": "1.104.2",
+      "type": "Color temperature light",
+      "uniqueid": "00:17:88:01:00:b7:ff:0b-0b"
+    },
+    "6": {
+      "capabilities": {
+        "certified": true,
+        "control": {
+          "ct": {
+            "max": 454,
+            "min": 153
+          },
+          "maxlumen": 806,
+          "mindimlevel": 1000
+        },
+        "streaming": {
+          "proxy": false,
+          "renderer": false
+        }
+      },
+      "config": {
+        "archetype": "classicbulb",
+        "direction": "omnidirectional",
+        "function": "functional",
+        "startup": {
+          "configured": true,
+          "mode": "safety"
+        }
+      },
+      "manufacturername": "Signify Netherlands B.V.",
+      "modelid": "LTW001",
+      "name": "masterBedroomGhostly",
+      "state": {
+        "alert": "none",
+        "bri": 254,
+        "colormode": "ct",
+        "ct": 230,
+        "mode": "homeautomation",
+        "on": true,
+        "reachable": true
+      },
+      "swupdate": {
+        "lastinstall": "2020-12-09T19:13:52",
+        "state": "noupdates"
+      },
+      "swversion": "1.104.2",
+      "type": "Color temperature light",
+      "uniqueid": "00:17:88:01:00:e6:27:22-0b"
+    },
+    "7": {
+      "capabilities": {
+        "certified": true,
+        "control": {
+          "ct": {
+            "max": 454,
+            "min": 153
+          },
+          "maxlumen": 806,
+          "mindimlevel": 1000
+        },
+        "streaming": {
+          "proxy": false,
+          "renderer": false
+        }
+      },
+      "config": {
+        "archetype": "classicbulb",
+        "direction": "omnidirectional",
+        "function": "functional",
+        "startup": {
+          "configured": true,
+          "mode": "safety"
+        }
+      },
+      "manufacturername": "Signify Netherlands B.V.",
+      "modelid": "LTW001",
+      "name": "basementGhostly",
+      "state": {
+        "alert": "none",
+        "bri": 254,
+        "colormode": "ct",
+        "ct": 230,
+        "mode": "homeautomation",
+        "on": true,
+        "reachable": true
+      },
+      "swupdate": {
+        "lastinstall": "2020-12-09T19:13:52",
+        "state": "noupdates"
+      },
+      "swversion": "1.104.2",
+      "type": "Color temperature light",
+      "uniqueid": "00:17:88:01:00:a9:6a:18-0b"
+    },
+    "8": {
+      "capabilities": {
+        "certified": true,
+        "control": {
+          "ct": {
+            "max": 454,
+            "min": 153
+          },
+          "maxlumen": 806,
+          "mindimlevel": 1000
+        },
+        "streaming": {
+          "proxy": false,
+          "renderer": false
+        }
+      },
+      "config": {
+        "archetype": "classicbulb",
+        "direction": "omnidirectional",
+        "function": "functional",
+        "startup": {
+          "configured": true,
+          "mode": "safety"
+        }
+      },
+      "manufacturername": "Signify Netherlands B.V.",
+      "modelid": "LTW001",
+      "name": "outdoorGhostly",
+      "state": {
+        "alert": "none",
+        "bri": 254,
+        "colormode": "ct",
+        "ct": 230,
+        "mode": "homeautomation",
+        "on": true,
+        "reachable": true
+      },
+      "swupdate": {
+        "lastinstall": "2020-12-09T19:13:52",
+        "state": "noupdates"
+      },
+      "swversion": "1.104.2",
+      "type": "Color temperature light",
+      "uniqueid": "00:17:88:01:00:de:54:a8-0b"
+    },
+    "9": {
+      "capabilities": {
+        "certified": true,
+        "control": {
+          "ct": {
+            "max": 454,
+            "min": 153
+          },
+          "maxlumen": 806,
+          "mindimlevel": 1000
+        },
+        "streaming": {
+          "proxy": false,
+          "renderer": false
+        }
+      },
+      "config": {
+        "archetype": "classicbulb",
+        "direction": "omnidirectional",
+        "function": "functional",
+        "startup": {
+          "configured": true,
+          "mode": "safety"
+        }
+      },
+      "manufacturername": "Signify Netherlands B.V.",
+      "modelid": "LTW001",
+      "name": "backyardGhostly",
+      "state": {
+        "alert": "none",
+        "bri": 254,
+        "colormode": "ct",
+        "ct": 230,
+        "mode": "homeautomation",
+        "on": true,
+        "reachable": true
+      },
+      "swupdate": {
+        "lastinstall": "2020-12-09T19:13:52",
+        "state": "noupdates"
+      },
+      "swversion": "1.104.2",
+      "type": "Color temperature light",
+      "uniqueid": "00:17:88:01:00:e7:e1:d3-0b"
+    }
+  },
+  "resourcelinks": {},
+  "rules": {},
+  "scenes": {},
+  "schedules": {},
+  "sensors": {
+    "1": {
+      "config": {
+        "configured": false,
+        "on": true,
+        "reachable": true,
+        "sunriseoffset": 30,
+        "sunsetoffset": -30
+      },
+      "manufacturername": "Signify Netherlands B.V.",
+      "modelid": "PHDL00",
+      "name": "Daylight",
+      "state": {
+        "daylight": null,
+        "lastupdated": "none"
+      },
+      "swversion": "1.0",
+      "type": "Daylight"
+    }
+  }
+}
