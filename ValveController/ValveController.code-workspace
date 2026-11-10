@@ -1,0 +1,72 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "C_Cpp.default.configurationProvider": "platformio.platformio-ide",
+    "files.watcherExclude": {
+      "**/.pio/**": true
+    },
+    "search.exclude": {
+      "**/.pio/**": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "platformio.platformio-ide",
+      "ms-vscode.cpptools"
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "ValveController: Build",
+        "type": "process",
+        "command": "${env:USERPROFILE}/.platformio/penv/Scripts/platformio.exe",
+        "args": ["run", "-e", "esp32dev"],
+        "options": { "cwd": "${workspaceFolder}" },
+        "group": { "kind": "build", "isDefault": true },
+        "problemMatcher": ["$gcc"]
+      },
+      {
+        "label": "ValveController: Upload",
+        "type": "process",
+        "command": "${env:USERPROFILE}/.platformio/penv/Scripts/platformio.exe",
+        "args": ["run", "-e", "esp32dev", "--target", "upload"],
+        "options": { "cwd": "${workspaceFolder}" },
+        "problemMatcher": ["$gcc"]
+      },
+      {
+        "label": "ValveController: Serial Monitor",
+        "type": "process",
+        "command": "${env:USERPROFILE}/.platformio/penv/Scripts/platformio.exe",
+        "args": ["device", "monitor", "--baud", "115200"],
+        "options": { "cwd": "${workspaceFolder}" },
+        "problemMatcher": []
+      },
+      {
+        "label": "ValveController: Compile Host Tests",
+        "type": "process",
+        "command": "g++",
+        "args": [
+          "-std=c++11", "-Wall", "-Wextra", "-Werror", "-I", "include",
+          "test/test_valve_control.cpp", "-o", "${env:TEMP}/valve-control-tests.exe"
+        ],
+        "options": { "cwd": "${workspaceFolder}" },
+        "problemMatcher": ["$gcc"]
+      },
+      {
+        "label": "ValveController: Host Tests",
+        "type": "process",
+        "command": "${env:TEMP}/valve-control-tests.exe",
+        "dependsOn": "ValveController: Compile Host Tests",
+        "options": { "cwd": "${workspaceFolder}" },
+        "group": { "kind": "test", "isDefault": true },
+        "problemMatcher": []
+      }
+    ]
+  }
+}
