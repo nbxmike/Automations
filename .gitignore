@@ -14,3 +14,7 @@ backups/
 __pycache__/
 .vs/
 References/
+
+# Machine-specific VS Code / PlatformIO configuration
+/ValveController/.vscode/c_cpp_properties.json
+/ValveController/.vscode/launch.json

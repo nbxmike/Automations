@@ -1,2 +1,7 @@
 .pio/
 /include/config_secrets.h
+
+# Machine-specific VS Code and PlatformIO-generated configuration
+.vscode/c_cpp_properties.json
+.vscode/launch.json
+.vscode/settings.json
