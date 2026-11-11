@@ -69,25 +69,20 @@ python3 Tools/mqtt_activity_logger.py --help
 ### Install On The Pi
 
 The supplied service assumes `/home/pi/automations` and user `pi`, matching the
-other units. The existing service installer does not discover units in Tools;
-install this optional diagnostic service explicitly:
+other units. Install it individually or together with the other services:
 
 ```sh
 cd /home/pi/automations
 sudo ./install_dependencies.sh
-sed -i 's/\r$//' Tools/mqtt_activity_logger.py Tools/mqtt_activity_logger.service
-python3 -m py_compile Tools/mqtt_activity_logger.py
-sudo cp Tools/mqtt_activity_logger.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now mqtt_activity_logger.service
+sudo ./install_services.sh mqtt_activity_logger
+# Or install all services with: sudo ./install_services.sh --all
 systemctl status mqtt_activity_logger.service
 journalctl -u mqtt_activity_logger.service -f
 ```
 
 The `pi` user needs read access to the root credentials file and write access to
 `Tools/logs` (created automatically and excluded from Git). Restart with
-`sudo systemctl restart mqtt_activity_logger.service` after updating the script. After editing the unit,
-copy it again and run `daemon-reload` before restarting. Stop capture with
+`sudo ./reinstall_services.sh mqtt_activity_logger` after updating the script or unit. Stop capture with
 `sudo systemctl stop mqtt_activity_logger.service`.
 
 ### Log Format And Retention

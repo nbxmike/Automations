@@ -7,6 +7,7 @@ AUTOMATIONS_DIR="/home/pi/automations"
 ACTIONS_DIR="$AUTOMATIONS_DIR/Actions"
 SPECTRES_DIR="$AUTOMATIONS_DIR/Spectres"
 ROUTERS_DIR="$AUTOMATIONS_DIR/Routers"
+TOOLS_DIR="$AUTOMATIONS_DIR/Tools"
 SYSTEMD_DIR="/etc/systemd/system"
 EXCLUDED_SERVICES=("omada_presence_automation")
 SERVICE_FILES=()
@@ -29,6 +30,10 @@ resolve_service_path() {
         echo "$ROUTERS_DIR/$candidate.service"
         return 0
     fi
+    if [ -f "$TOOLS_DIR/$candidate.service" ]; then
+        echo "$TOOLS_DIR/$candidate.service"
+        return 0
+    fi
     return 1
 }
 
@@ -45,9 +50,9 @@ is_excluded_service() {
 usage() {
     echo "Usage: sudo $0 <service_name>[.service] | --all"
     echo
-    echo "Available services in $AUTOMATIONS_DIR, $ACTIONS_DIR, $SPECTRES_DIR, and $ROUTERS_DIR:"
+    echo "Available services in $AUTOMATIONS_DIR, $ACTIONS_DIR, $SPECTRES_DIR, $ROUTERS_DIR, and $TOOLS_DIR:"
     shopt -s nullglob
-    SERVICE_FILES=("$AUTOMATIONS_DIR"/*.service "$ACTIONS_DIR"/*.service "$SPECTRES_DIR"/*.service "$ROUTERS_DIR"/*.service)
+    SERVICE_FILES=("$AUTOMATIONS_DIR"/*.service "$ACTIONS_DIR"/*.service "$SPECTRES_DIR"/*.service "$ROUTERS_DIR"/*.service "$TOOLS_DIR"/*.service)
     for f in "${SERVICE_FILES[@]}"; do
         [ -e "$f" ] || continue
         name="$(basename "$f" .service)"
@@ -82,7 +87,7 @@ fi
 # Strip CRLF from all automation files before validation. This avoids systemd
 # and Python parsing errors when scripts have been edited on a Windows system.
 shopt -s nullglob
-for file in "$AUTOMATIONS_DIR"/*.service "$AUTOMATIONS_DIR"/*.py "$AUTOMATIONS_DIR"/*.sh "$ACTIONS_DIR"/*.service "$ACTIONS_DIR"/*.py "$ACTIONS_DIR"/*.sh "$SPECTRES_DIR"/*.service "$SPECTRES_DIR"/*.py "$SPECTRES_DIR"/*.sh "$ROUTERS_DIR"/*.service "$ROUTERS_DIR"/*.py "$ROUTERS_DIR"/*.sh; do
+for file in "$AUTOMATIONS_DIR"/*.service "$AUTOMATIONS_DIR"/*.py "$AUTOMATIONS_DIR"/*.sh "$ACTIONS_DIR"/*.service "$ACTIONS_DIR"/*.py "$ACTIONS_DIR"/*.sh "$SPECTRES_DIR"/*.service "$SPECTRES_DIR"/*.py "$SPECTRES_DIR"/*.sh "$ROUTERS_DIR"/*.service "$ROUTERS_DIR"/*.py "$ROUTERS_DIR"/*.sh "$TOOLS_DIR"/*.service "$TOOLS_DIR"/*.py "$TOOLS_DIR"/*.sh; do
     [ -e "$file" ] || continue
     sed -i 's/\r$//' "$file"
 done
@@ -120,7 +125,7 @@ fi
 services=()
 if [ "$1" = "--all" ]; then
     shopt -s nullglob
-    SERVICE_FILES=("$AUTOMATIONS_DIR"/*.service "$ACTIONS_DIR"/*.service "$SPECTRES_DIR"/*.service "$ROUTERS_DIR"/*.service)
+    SERVICE_FILES=("$AUTOMATIONS_DIR"/*.service "$ACTIONS_DIR"/*.service "$SPECTRES_DIR"/*.service "$ROUTERS_DIR"/*.service "$TOOLS_DIR"/*.service)
     for f in "${SERVICE_FILES[@]}"; do
         [ -e "$f" ] || continue
         name="$(basename "$f" .service)"
@@ -154,14 +159,14 @@ for name in "${services[@]}"; do
     fi
 
     if [ -z "$unit" ]; then
-        fail "Service file not found for '$name' in $AUTOMATIONS_DIR, $ACTIONS_DIR, or $SPECTRES_DIR" \
-            "Copy $name.service into the automation root, Actions, or Spectres folder, or check the spelling." \
+        fail "Service file not found for '$name' in $AUTOMATIONS_DIR, $ACTIONS_DIR, $SPECTRES_DIR, $ROUTERS_DIR, or $TOOLS_DIR" \
+            "Copy $name.service into one of those folders, or check the spelling." \
             "Run '$0' with no arguments to list available services."
     fi
 
     if grep -q $'\r' "$unit"; then
         fail "$unit has Windows (CRLF) line endings, which systemd cannot parse reliably." \
-            "Fix with: sed -i 's/\\r\$//' $AUTOMATIONS_DIR/*.service $AUTOMATIONS_DIR/*.py $AUTOMATIONS_DIR/*.sh $ACTIONS_DIR/*.service $ACTIONS_DIR/*.py $ACTIONS_DIR/*.sh $AUTOMATIONS_DIR/Spectres/*.service $AUTOMATIONS_DIR/Spectres/*.py $AUTOMATIONS_DIR/Spectres/*.sh $AUTOMATIONS_DIR/Routers/*.service $AUTOMATIONS_DIR/Routers/*.py $AUTOMATIONS_DIR/Routers/*.sh"
+            "Fix the line endings in $unit and re-run the installer."
     fi
 
     exec_line="$(grep -m1 '^ExecStart=' "$unit" || true)"
@@ -174,7 +179,7 @@ for name in "${services[@]}"; do
     if [ -z "$script_path" ]; then
         fail "Could not find a .py script in $unit:" \
             "$exec_line" \
-            "Edit ExecStart to point to a Python script under $AUTOMATIONS_DIR, $ACTIONS_DIR, $SPECTRES_DIR, or $ROUTERS_DIR."
+            "Edit ExecStart to point to a Python script under $AUTOMATIONS_DIR."
     fi
 
     if [[ "$script_path" != "$AUTOMATIONS_DIR"* && "$script_path" != "$SPECTRES_DIR"* && "$script_path" != "$ROUTERS_DIR"* ]]; then

@@ -9,7 +9,7 @@ if [ ! -d "$SCRIPT_DIR" ]; then
 fi
 
 # Repair files copied from Windows before checking or running them.
-for file in "$SCRIPT_DIR"/*.service "$SCRIPT_DIR"/*.py "$SCRIPT_DIR"/*.sh "$SCRIPT_DIR"/Actions/*.service "$SCRIPT_DIR"/Actions/*.py "$SCRIPT_DIR"/Actions/*.sh "$SCRIPT_DIR"/Routers/*.service "$SCRIPT_DIR"/Routers/*.py "$SCRIPT_DIR"/Routers/*.sh; do
+for file in "$SCRIPT_DIR"/*.service "$SCRIPT_DIR"/*.py "$SCRIPT_DIR"/*.sh "$SCRIPT_DIR"/Actions/*.service "$SCRIPT_DIR"/Actions/*.py "$SCRIPT_DIR"/Actions/*.sh "$SCRIPT_DIR"/Spectres/*.service "$SCRIPT_DIR"/Spectres/*.py "$SCRIPT_DIR"/Spectres/*.sh "$SCRIPT_DIR"/Routers/*.service "$SCRIPT_DIR"/Routers/*.py "$SCRIPT_DIR"/Routers/*.sh "$SCRIPT_DIR"/Tools/*.service "$SCRIPT_DIR"/Tools/*.py "$SCRIPT_DIR"/Tools/*.sh; do
     [ -f "$file" ] || continue
     if ! sed -i 's/\r$//' "$file"; then
         echo "Could not normalize line endings: $file" >&2
@@ -48,6 +48,7 @@ python_files=(
     "Spectres/livingRoomSpectre.py"
     "Spectres/masterBedroomSpecter.py"
     "Spectres/outdoorSpecter.py"
+    "Tools/mqtt_activity_logger.py"
 )
 
 # Keep this list aligned with install/reinstall script exclusions.

@@ -129,7 +129,7 @@ Installs everything the automations need. It uses APT packages (`python3`, `pyth
 ```sh
 sed -i 's/\r$//' /home/pi/automations/*.service /home/pi/automations/*.py /home/pi/automations/*.sh /home/pi/automations/Actions/*.service /home/pi/automations/Actions/*.py
 
-sudo ./install_services.sh --all                  # every installable service, including Actions/
+sudo ./install_services.sh --all                  # every installable service, including Tools/
 sudo ./install_services.sh presence_check_v2      # one service (".service" suffix optional)
 sudo ./install_services.sh                        # list available services
 ```
@@ -158,7 +158,7 @@ sudo ./reinstall_services.sh --all
 ./check_python_syntax.sh
 ```
 
-Byte-compiles automation scripts in `/home/pi/automations`, `Actions/`, `Routers/`, and `Spectres/`, and reports any that are missing or have syntax errors. It only reads the scripts, so it doesn't need root.
+Normalizes line endings and byte-compiles the listed automation scripts, including the MQTT activity logger in `Tools/`, reporting missing files or syntax errors. It needs write access to the files it normalizes.
 
 ### `fix_services.txt`
 
