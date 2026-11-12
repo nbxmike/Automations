@@ -1,7 +1,6 @@
 # Local secrets for automation scripts
 automation_credentials.py
 wifi_secrets.h
-/RelayBoard/include/config_secrets.h
 
 # Private MQTT activity captures
 Tools/logs/
@@ -15,6 +14,5 @@ __pycache__/
 .vs/
 References/
 
-# Machine-specific VS Code / PlatformIO configuration
-/ValveController/.vscode/c_cpp_properties.json
-/ValveController/.vscode/launch.json
+# Firmware projects and their local configuration now live in ../ESP32.
+
