@@ -1,6 +1,0 @@
-[submodule "RelayBoard/subRepo1"]
-	path = RelayBoard/subRepo1
-	url = https://github.com/makstech/esphome-es32a08-expansion-board-example.git
-[submodule "RelayBoard/subRepo2"]
-	path = RelayBoard/subRepo2
-	url = https://github.com/naldoxable/ES32A08.git
